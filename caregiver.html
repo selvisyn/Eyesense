@@ -432,7 +432,7 @@ async function connectNotifications(silent = false) {
     // Service Worker kaydı
     if (!('serviceWorker' in navigator)) throw new Error('Bu tarayıcı Service Worker desteklemiyor');
 
-    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const swReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
     console.log('[Caregiver] SW kayıtlı:', swReg.scope);
 
     // Firebase başlat
