@@ -1,6 +1,6 @@
 /**
- * EyeSense — Render Backend  (Node.js / Express)
- * Token'lar Firestore'da kalıcı saklanır — Render restart'ta kaybolmaz
+ * EyeSense — Render Backend (Node.js / Express)
+ * Token'lar Firestore'da kalici saklanir
  */
 
 const express = require('express');
@@ -10,7 +10,6 @@ const admin   = require('firebase-admin');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-/* ── Firebase Admin başlat ── */
 let firebaseReady = false;
 let db = null;
 
@@ -19,7 +18,6 @@ try {
   if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT env yok');
   const sa = JSON.parse(raw);
   if (!sa.project_id) throw new Error('project_id yok');
-
   admin.initializeApp({ credential: admin.credential.cert(sa) });
   db = admin.firestore();
   firebaseReady = true;
@@ -28,7 +26,6 @@ try {
   console.error('Firebase baslatma hatasi:', err.message);
 }
 
-/* ── Middleware ── */
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '50kb' }));
 app.use((req, _res, next) => {
@@ -36,12 +33,10 @@ app.use((req, _res, next) => {
   next();
 });
 
-/* ── GET / ── */
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', service: 'EyeSense Notifier', firebaseReady, ts: new Date().toISOString() });
 });
 
-/* ── POST /api/register-token ── */
 app.post('/api/register-token', async (req, res) => {
   const { contactId, token, deviceLabel } = req.body;
   if (!contactId || !token) return res.status(400).json({ error: 'contactId ve token gerekli' });
@@ -52,17 +47,15 @@ app.post('/api/register-token', async (req, res) => {
     if (db) {
       const docId = String(contactId) + '_' + token.slice(-16);
       console.log('Firestore yaziliyor, docId:', docId);
-      
       await db.collection('fcm_tokens').doc(docId).set({
         contactId: String(contactId),
         token,
         deviceLabel: deviceLabel || 'Refakatci Cihazi',
         updatedAt: new Date().toISOString()
       });
-      
-      console.log('Token Firestore kaydedildi OK');
+      console.log('Token Firestore kaydedildi OK, contactId:', contactId);
     } else {
-      console.log('db null - Firestore baglantisi yok');
+      console.log('HATA: db null, Firestore baglantisi yok');
     }
     res.json({ success: true, contactId, stored: !!db });
   } catch (err) {
@@ -71,7 +64,6 @@ app.post('/api/register-token', async (req, res) => {
   }
 });
 
-/* ── GET /api/tokens ── */
 app.get('/api/tokens', async (_req, res) => {
   try {
     if (!db) return res.json({ contacts: {}, note: 'Firestore yok' });
@@ -88,12 +80,10 @@ app.get('/api/tokens', async (_req, res) => {
   }
 });
 
-/* ── POST /api/notify-caregiver ── */
 app.post('/api/notify-caregiver', async (req, res) => {
   const { message, contactName = 'Refakatci', contactId, fcmToken, location, timestamp, lang = 'tr' } = req.body;
   if (!message) return res.status(400).json({ error: 'message gerekli' });
 
-  /* Token topla: body'den gelen + Firestore'dan gelen */
   const tokens = new Set();
   if (fcmToken) tokens.add(fcmToken);
 
@@ -113,8 +103,7 @@ app.post('/api/notify-caregiver', async (req, res) => {
     return res.json({ success: true, mode: 'log-only', message, tokenCount: tokens.size });
   }
   if (tokens.size === 0) {
-    return res.json({ success: true, mode: 'no-token', message,
-      hint: 'Refakatci panelini acip Baglani tiklayarak token kaydedin' });
+    return res.json({ success: true, mode: 'no-token', message, hint: 'Refakatci panelinde Baglana basin' });
   }
 
   const title    = 'EyeSense — ' + contactName;
@@ -140,12 +129,10 @@ app.post('/api/notify-caregiver', async (req, res) => {
     try {
       const msgId = await admin.messaging().send({ ...base, token });
       results.push({ token: token.slice(-8), msgId });
-      console.log('Gonderildi:', token.slice(-8));
+      console.log('Gonderildi OK:', token.slice(-8));
     } catch (err) {
       failures.push({ token: token.slice(-8), error: err.message });
-      console.error('Hata:', token.slice(-8), err.message);
-
-      /* Geçersiz token ise Firestore'dan sil */
+      console.error('Gonderi hatasi:', token.slice(-8), err.message);
       if (err.code === 'messaging/registration-token-not-registered' && db) {
         try {
           const snap = await db.collection('fcm_tokens').where('token', '==', token).get();
