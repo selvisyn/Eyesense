@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>EyeSense v13</title>
+<title>EyeSense</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2799,7 +2799,7 @@ async function qmSendMsg(text, contactIdx=0){
   // 2. Konum bilgisi (varsa)
   let location = null;
   if(typeof lastLocation !== 'undefined' && lastLocation){
-    location = { lat: lastLocation.lat, lng: lastLocation.lng };
+    location = { lat: lastLocation.latitude, lng: lastLocation.longitude};
   }
 
   const contact = (typeof qmContacts !== 'undefined' && qmContacts[contactIdx])
