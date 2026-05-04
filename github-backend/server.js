@@ -39,7 +39,7 @@ app.get('/', (_req, res) => {
 
 app.post('/api/register-token', async (req, res) => {
   const { contactId, token, deviceLabel } = req.body;
-  if (!contactId || !token) return res.status(400).json({ error: 'contactId ve token gerekli' });
+  if (contactId === undefined || contactId === null || !token)({ error: 'contactId ve token gerekli' });
 
   console.log('Token kayit istegi alindi, contactId:', contactId);
 
