@@ -107,9 +107,9 @@ app.post('/api/notify-caregiver', async (req, res) => {
   }
 
   const title    = 'EyeSense — ' + contactName;
-  const bodyText = location
-    ? message + ' \uD83D\uDCCD ' + Number(location.lat).toFixed(4) + ', ' + Number(location.lng).toFixed(4)
-    : message;
+  const bodyText = (location && location.lat && location.lng && !isNaN(location.lat) && !isNaN(location.lng))
+  ? message + ' 📍 ' + Number(location.lat).toFixed(4) + ', ' + Number(location.lng).toFixed(4)
+  : message;
 
   const base = {
     notification: { title, body: bodyText },
