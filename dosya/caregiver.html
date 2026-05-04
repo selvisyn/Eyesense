@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EyeSense Refakatçi">
+<title>EyeSense — Refakatçi Paneli</title>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0f1a;
+    --card:     #1a1a2e;
+    --accent:   #4f8ef7;
+    --green:    #22c55e;
+    --yellow:   #f59e0b;
+    --red:      #ef4444;
+    --text:     #e2e8f0;
+    --muted:    #94a3b8;
+    --border:   #2d2d4e;
+    --radius:   16px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header .logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #4f8ef7 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 20px rgba(79,142,247,0.4);
+  }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 14px;
+  }
+
+  /* ── Status badge ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    justify-content: center;
+    transition: all .3s;
+  }
+  .status-badge.idle    { background: rgba(148,163,184,.12); color: var(--muted); }
+  .status-badge.loading { background: rgba(245,158,11,.12);  color: var(--yellow); }
+  .status-badge.ok      { background: rgba(34,197,94,.12);   color: var(--green);  }
+  .status-badge.error   { background: rgba(239,68,68,.12);   color: var(--red);    }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .dot.pulse {
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .4; transform: scale(.7); }
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    margin-top: 12px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary   { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn:disabled  { opacity: .45; cursor: not-allowed; }
+
+  /* ── Contact selector ── */
+  .contact-list { display: flex; flex-direction: column; gap: 8px; }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .contact-item.selected {
+    border-color: var(--accent);
+    background: rgba(79,142,247,.08);
+  }
+  .contact-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f8ef7 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .contact-info { flex: 1; }
+  .contact-info .name  { font-size: 15px; font-weight: 600; }
+  .contact-info .role  { font-size: 12px; color: var(--muted); }
+  .contact-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: all .2s;
+  }
+  .contact-item.selected .contact-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* ── Token box ── */
+  .token-box {
+    background: rgba(0,0,0,.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--muted);
+    word-break: break-all;
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 10px;
+  }
+
+  /* ── Notifications feed ── */
+  #notif-feed { display: flex; flex-direction: column; gap: 8px; }
+  .notif-item {
+    background: rgba(79,142,247,.07);
+    border: 1px solid rgba(79,142,247,.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .notif-item .msg  { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .notif-item .meta { font-size: 11px; color: var(--muted); }
+  .notif-item .maps-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: 4px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-state .emoji { font-size: 28px; display: block; margin-bottom: 8px; }
+
+  /* ── Render URL input ── */
+  .input-row { display: flex; gap: 8px; margin-top: 8px; }
+  .input-row input {
+    flex: 1;
+    background: rgba(0,0,0,.35);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+  .input-row button {
+    padding: 10px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">👁️</div>
+  <h1>EyeSense Refakatçi Paneli</h1>
+  <p>Kullanıcıdan gelen bildirimleri bu cihazda alın</p>
+</div>
+
+<!-- Bildirim Durumu -->
+<div class="card">
+  <h2>📡 Bildirim Durumu</h2>
+  <div class="status-badge idle" id="status-badge">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-text">Henüz bağlanmadı</span>
+  </div>
+  <button class="btn btn-primary" id="btn-connect" onclick="connectNotifications()">
+    🔔 Bildirimlere İzin Ver &amp; Bağlan
+  </button>
+  <div class="token-box" id="token-box" style="display:none"></div>
+</div>
+
+<!-- Render Backend URL -->
+<div class="card">
+  <h2>⚙️ Backend URL</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:4px">
+    Render'da deploy ettiğinizde URL'i buraya girin
+  </p>
+  <div class="input-row">
+    <input type="url" id="render-url-input" placeholder="https://eyesense-backend.onrender.com">
+    <button onclick="saveRenderUrl()">Kaydet</button>
+  </div>
+  <div id="url-status" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+</div>
+
+<!-- Hangi Kontak için kayıt -->
+<div class="card">
+  <h2>👤 Hangi Kişi için Refakatçisiniz?</h2>
+  <div class="contact-list" id="contact-list">
+    <div class="contact-item selected" data-idx="0" onclick="selectContact(0)">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="name">Kullanıcı 1</div>
+        <div class="role">Birincil kullanıcı</div>
+      </div>
+      <div class="contact-check">✓</div>
+    </div>
+    <div class="contact-item" data-idx="1" onclick="selectContact(1)">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="name">Kullanıcı 2</div>
+        <div class="role">İkincil kullanıcı</div>
+      </div>
+      <div class="contact-check"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Alınan Bildirimler -->
+<div class="card">
+  <h2>📩 Alınan Bildirimler</h2>
+  <div id="notif-feed">
+    <div class="empty-state">
+      <span class="emoji">🔕</span>
+      Henüz bildirim alınmadı.<br>Bağlandıktan sonra EyeSense mesajları burada görünür.
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="clearFeed()" style="margin-top:8px;font-size:13px">
+    🗑️ Geçmişi Temizle
+  </button>
+</div>
+
+<div class="footer">EyeSense v14 · Refakatçi Paneli</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG — Kendi değerlerinle doldur
+══════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAtJxtqc89Iyxk165LEFQCWzAj4N2K-7Xg",
+  authDomain:        "eyesense-53f01.firebaseapp.com",
+  projectId:         "eyesense-53f01",
+  storageBucket:     "eyesense-53f01.firebasestorage.app",
+  messagingSenderId: "577546876245",
+  appId:             "1:577546876245:web:5cadd6c853ec23cb16abdc"
+};
+
+// VAPID key: Firebase Console → Cloud Messaging → Web Configuration → Key pair
+// Oluşturup buraya yapıştırın:
+const VAPID_KEY = 'BURAYA_VAPID_KEY_GEL';
+
+/* ══════════════════════════════════════════
+   State
+══════════════════════════════════════════ */
+let selectedContactIdx = 0;
+let currentToken       = null;
+let messaging          = null;
+const notifications    = [];
+
+const RENDER_URL_KEY = 'es_caregiver_render_url';
+const NOTIF_FEED_KEY = 'es_caregiver_feed';
+
+/* ══════════════════════════════════════════
+   Init
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Kayıtlı Render URL'ini yükle
+  const saved = localStorage.getItem(RENDER_URL_KEY);
+  if (saved) document.getElementById('render-url-input').value = saved;
+
+  // Kayıtlı bildirimleri yükle
+  try {
+    const feed = JSON.parse(localStorage.getItem(NOTIF_FEED_KEY) || '[]');
+    feed.forEach(n => appendNotif(n, false));
+  } catch(_) {}
+
+  // Daha önce bağlandıysa otomatik bağlan
+  if (Notification.permission === 'granted') {
+    connectNotifications(true);
+  }
+});
+
+/* ══════════════════════════════════════════
+   Render URL
+══════════════════════════════════════════ */
+function getRenderUrl() {
+  return localStorage.getItem(RENDER_URL_KEY) || 'https://eyesense-backend.onrender.com';
+}
+
+function saveRenderUrl() {
+  const val = document.getElementById('render-url-input').value.trim().replace(/\/$/, '');
+  if (!val.startsWith('http')) {
+    document.getElementById('url-status').textContent = '⚠️ Geçerli bir URL girin';
+    return;
+  }
+  localStorage.setItem(RENDER_URL_KEY, val);
+  document.getElementById('url-status').textContent = '✅ Kaydedildi: ' + val;
+  if (currentToken) registerTokenToBackend(currentToken);
+}
+
+/* ══════════════════════════════════════════
+   Contact selector
+══════════════════════════════════════════ */
+function selectContact(idx) {
+  selectedContactIdx = idx;
+  document.querySelectorAll('.contact-item').forEach(el => {
+    const isSelected = parseInt(el.dataset.idx) === idx;
+    el.classList.toggle('selected', isSelected);
+    el.querySelector('.contact-check').textContent = isSelected ? '✓' : '';
+  });
+  if (currentToken) registerTokenToBackend(currentToken);
+}
+
+/* ══════════════════════════════════════════
+   Status helpers
+══════════════════════════════════════════ */
+function setStatus(state, text) {
+  const badge = document.getElementById('status-badge');
+  const dot   = document.getElementById('status-dot');
+  badge.className = 'status-badge ' + state;
+  dot.className   = 'dot' + (state === 'loading' ? ' pulse' : '');
+  document.getElementById('status-text').textContent = text;
+}
+
+/* ══════════════════════════════════════════
+   FCM bağlantısı
+══════════════════════════════════════════ */
+async function connectNotifications(silent = false) {
+  const btn = document.getElementById('btn-connect');
+  btn.disabled = true;
+  setStatus('loading', 'Bağlanıyor…');
+
+  try {
+    // Service Worker kaydı
+    if (!('serviceWorker' in navigator)) throw new Error('Bu tarayıcı Service Worker desteklemiyor');
+
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    console.log('[Caregiver] SW kayıtlı:', swReg.scope);
+
+    // Firebase başlat
+    const app = firebase.initializeApp(FIREBASE_CONFIG);
+    messaging = firebase.messaging();
+
+    // Bildirim izni iste
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error('Bildirim izni reddedildi');
+
+    // FCM token al
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token) throw new Error('FCM token alınamadı');
+
+    currentToken = token;
+    console.log('[Caregiver] FCM Token:', token);
+
+    // Token'ı göster
+    const tokenBox = document.getElementById('token-box');
+    tokenBox.style.display = 'block';
+    tokenBox.textContent = token;
+
+    // Backend'e kaydet
+    await registerTokenToBackend(token);
+
+    // Ön planda gelen bildirimleri dinle
+    messaging.onMessage((payload) => {
+      console.log('[Caregiver] Ön plan bildirimi:', payload);
+      const notif = {
+        msg:  payload.notification?.body || payload.data?.message || '(mesaj yok)',
+        ts:   payload.data?.ts || new Date().toISOString(),
+        lat:  payload.data?.lat || '',
+        lng:  payload.data?.lng || ''
+      };
+      appendNotif(notif, true);
+      // Ses çal
+      try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play().catch(()=>{}); } catch(_) {}
+    });
+
+    setStatus('ok', '✅ Bildirimler aktif — hazır');
+    btn.textContent = '✅ Bağlandı (yeniden bağlan)';
+    btn.disabled = false;
+
+  } catch (err) {
+    console.error('[Caregiver]', err);
+    setStatus('error', '❌ ' + err.message);
+    if (!silent) alert('Bağlantı hatası:\n' + err.message);
+    btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Token'ı backend'e kaydet
+══════════════════════════════════════════ */
+async function registerTokenToBackend(token) {
+  const url = getRenderUrl();
+  try {
+    const res = await fetch(url + '/api/register-token', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        contactId:   selectedContactIdx,
+        token,
+        deviceLabel: navigator.userAgent.slice(0, 60)
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await res.json();
+    console.log('[Caregiver] Token kaydedildi:', data);
+    document.getElementById('url-status').textContent =
+      '✅ Backend bağlı · ' + url;
+  } catch (err) {
+    console.warn('[Caregiver] Backend bağlantı hatası:', err.message);
+    document.getElementById('url-status').textContent =
+      '⚠️ Backend erişilemiyor: ' + err.message;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Bildirim listesi
+══════════════════════════════════════════ */
+function appendNotif(notif, save) {
+  const feed = document.getElementById('notif-feed');
+
+  // "Henüz bildirim yok" mesajını kaldır
+  const empty = feed.querySelector('.empty-state');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'notif-item';
+
+  const date = new Date(notif.ts);
+  const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = date.toLocaleDateString('tr-TR');
+
+  let mapsHtml = '';
+  if (notif.lat && notif.lng) {
+    const mapsUrl = 'https://www.google.com/maps?q=' + notif.lat + ',' + notif.lng;
+    mapsHtml = '<br><a class="maps-link" href="' + mapsUrl + '" target="_blank">📍 Konumu Görüntüle</a>';
+  }
+
+  item.innerHTML =
+    '<div class="msg">💬 ' + escapeHtml(notif.msg) + '</div>' +
+    '<div class="meta">⏰ ' + dateStr + ' ' + timeStr + '</div>' +
+    mapsHtml;
+
+  feed.insertBefore(item, feed.firstChild);
+
+  if (save) {
+    notifications.unshift(notif);
+    try {
+      localStorage.setItem(NOTIF_FEED_KEY, JSON.stringify(notifications.slice(0, 50)));
+    } catch(_) {}
+  }
+}
+
+function clearFeed() {
+  notifications.length = 0;
+  localStorage.removeItem(NOTIF_FEED_KEY);
+  document.getElementById('notif-feed').innerHTML =
+    '<div class="empty-state"><span class="emoji">🔕</span>Geçmiş temizlendi.</div>';
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
