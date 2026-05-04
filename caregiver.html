@@ -345,7 +345,7 @@ const FIREBASE_CONFIG = {
 
 // VAPID key: Firebase Console → Cloud Messaging → Web Configuration → Key pair
 // Oluşturup buraya yapıştırın:
-const VAPID_KEY = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
+const VAPID_KEY = 'BURAYA_VAPID_KEY_GEL';
 
 /* ══════════════════════════════════════════
    State
@@ -372,9 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
     feed.forEach(n => appendNotif(n, false));
   } catch(_) {}
 
-  // Daha önce bağlandıysa otomatik bağlan
+  // Her açılışta token'ı yenile ve backend'e kaydet
   if (Notification.permission === 'granted') {
-    connectNotifications(true);
+    connectNotifications(true);  // sessiz bağlan, token'ı Firestore'a yeniden kaydet
   }
 });
 
@@ -432,11 +432,15 @@ async function connectNotifications(silent = false) {
     // Service Worker kaydı
     if (!('serviceWorker' in navigator)) throw new Error('Bu tarayıcı Service Worker desteklemiyor');
 
-    const swReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    // SW yolunu dinamik belirle (GitHub Pages alt klasör sorununu önler)
+    const swPath = new URL('./firebase-messaging-sw.js', location.href).pathname;
+    const swReg = await navigator.serviceWorker.register(swPath);
     console.log('[Caregiver] SW kayıtlı:', swReg.scope);
 
-    // Firebase başlat
-    const app = firebase.initializeApp(FIREBASE_CONFIG);
+    // Firebase başlat — zaten başlatılmışsa mevcut uygulamayı kullan
+    if (firebase.apps.length === 0) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
     messaging = firebase.messaging();
 
     // Bildirim izni iste
