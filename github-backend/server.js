@@ -46,19 +46,27 @@ app.post('/api/register-token', async (req, res) => {
   const { contactId, token, deviceLabel } = req.body;
   if (!contactId || !token) return res.status(400).json({ error: 'contactId ve token gerekli' });
 
+  console.log('Token kayit istegi alindi, contactId:', contactId);
+
   try {
     if (db) {
-      await db.collection('fcm_tokens').doc(String(contactId) + '_' + token.slice(-16)).set({
+      const docId = String(contactId) + '_' + token.slice(-16);
+      console.log('Firestore yaziliyor, docId:', docId);
+      
+      await db.collection('fcm_tokens').doc(docId).set({
         contactId: String(contactId),
         token,
         deviceLabel: deviceLabel || 'Refakatci Cihazi',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      console.log('Token Firestore kaydedildi, contactId:', contactId);
+        updatedAt: new Date().toISOString()
+      });
+      
+      console.log('Token Firestore kaydedildi OK');
+    } else {
+      console.log('db null - Firestore baglantisi yok');
     }
     res.json({ success: true, contactId, stored: !!db });
   } catch (err) {
-    console.error('Token kayit hatasi:', err.message);
+    console.error('Token kayit HATASI:', err.code, err.message);
     res.status(500).json({ error: err.message });
   }
 });
