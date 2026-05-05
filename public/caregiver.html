@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EyeSense Refakatçi">
+<title>EyeSense Caregiver Panel</title>
+
+  <link rel="stylesheet" href="caregiver.css">
+</head>
+<body class="caregiver-page">
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">👁️</div>
+  <h1>EyeSense Refakatçi Paneli</h1>
+</div>
+
+<!-- Bildirim Durumu -->
+<div class="card">
+  <h2>📡 Bildirim Durumu</h2>
+  <div class="status-badge idle" id="status-badge">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-text">Henüz bağlanmadı</span>
+  </div>
+  <button class="btn btn-primary" id="btn-connect" onclick="connectNotifications()">
+    🔔 Bildirimlere İzin Ver &amp; Bağlan
+  </button>
+</div>
+
+<!-- Alınan Bildirimler -->
+<div class="card">
+  <h2>📩 Alınan Bildirimler</h2>
+  <div id="notif-feed">
+    <div class="empty-state">
+      <span class="emoji">🔕</span>
+      Henüz bildirim alınmadı.<br>Bağlandıktan sonra EyeSense mesajları burada görünür.
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="clearFeed()" style="margin-top:8px;font-size:13px">
+    🗑️ Geçmişi Temizle
+  </button>
+</div>
+
+<div class="footer">EyeSense v14 · Refakatçi Paneli</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG — Kendi değerlerinle doldur
+══════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAtJxtqc89Iyxk165LEFQCWzAj4N2K-7Xg",
+  authDomain:        "eyesense-53f01.firebaseapp.com",
+  projectId:         "eyesense-53f01",
+  storageBucket:     "eyesense-53f01.firebasestorage.app",
+  messagingSenderId: "577546876245",
+  appId:             "1:577546876245:web:5cadd6c853ec23cb16abdc"
+};
+
+// VAPID key: Firebase Console → Cloud Messaging → Web Configuration → Key pair
+// Oluşturup buraya yapıştırın:
+const VAPID_KEY = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
+
+/* ══════════════════════════════════════════
+   State
+══════════════════════════════════════════ */
+const selectedContactIdx = 0;  /* Tek kullanıcı: sabit 0 */
+let currentToken       = null;
+let messaging          = null;
+const notifications    = [];
+
+const NOTIF_FEED_KEY = 'es_caregiver_feed';
+
+/* ══════════════════════════════════════════
+   Init
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Kayıtlı bildirimleri yükle
+  try {
+    const feed = JSON.parse(localStorage.getItem(NOTIF_FEED_KEY) || '[]');
+    feed.forEach(n => appendNotif(n, false));
+  } catch(_) {}
+
+  // Her açılışta token'ı yenile ve backend'e kaydet
+  if (Notification.permission === 'granted') {
+    connectNotifications(true);  // sessiz bağlan, token'ı Firestore'a yeniden kaydet
+  }
+});
+
+/* ══════════════════════════════════════════
+   Render URL
+══════════════════════════════════════════ */
+/* Backend URL — sabit tanım, UI girişi yok */
+const BACKEND_URL = 'https://eyesense-backend.onrender.com';
+function getRenderUrl() { return BACKEND_URL; }
+
+
+
+/* ══════════════════════════════════════════
+   Status helpers
+══════════════════════════════════════════ */
+function setStatus(state, text) {
+  const badge = document.getElementById('status-badge');
+  const dot   = document.getElementById('status-dot');
+  badge.className = 'status-badge ' + state;
+  dot.className   = 'dot' + (state === 'loading' ? ' pulse' : '');
+  document.getElementById('status-text').textContent = text;
+}
+
+/* ══════════════════════════════════════════
+   FCM bağlantısı
+══════════════════════════════════════════ */
+async function connectNotifications(silent = false) {
+  const btn = document.getElementById('btn-connect');
+  btn.disabled = true;
+  setStatus('loading', 'Bağlanıyor…');
+
+  try {
+    // Service Worker kaydı
+    if (!('serviceWorker' in navigator)) throw new Error('Bu tarayıcı Service Worker desteklemiyor');
+
+    // SW yolunu dinamik belirle (GitHub Pages alt klasör sorununu önler)
+    const swPath = new URL('./firebase-messaging-sw.js', location.href).pathname;
+    const swReg = await navigator.serviceWorker.register(swPath);
+    console.log('[Caregiver] SW kayıtlı:', swReg.scope);
+
+    // Firebase başlat — zaten başlatılmışsa mevcut uygulamayı kullan
+    if (firebase.apps.length === 0) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    messaging = firebase.messaging();
+
+    // Bildirim izni iste
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error('Bildirim izni reddedildi');
+
+    // FCM token al
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token) throw new Error('FCM token alınamadı');
+
+    currentToken = token;
+    console.log('[Caregiver] FCM Token:', token);
+
+    // Backend'e kaydet
+    await registerTokenToBackend(token);
+
+    // Ön planda gelen bildirimleri dinle
+    messaging.onMessage((payload) => {
+      console.log('[Caregiver] Ön plan bildirimi:', payload);
+      const notif = {
+        msg:  payload.notification?.body || payload.data?.message || '(mesaj yok)',
+        ts:   payload.data?.ts || new Date().toISOString(),
+        lat:  payload.data?.lat || '',
+        lng:  payload.data?.lng || ''
+      };
+      appendNotif(notif, true);
+      // Ses çal
+      try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play().catch(()=>{}); } catch(_) {}
+    });
+
+    setStatus('ok', '✅ Bildirimler aktif — hazır');
+    btn.textContent = '✅ Bağlandı (yeniden bağlan)';
+    btn.disabled = false;
+
+  } catch (err) {
+    console.error('[Caregiver]', err);
+    setStatus('error', '❌ ' + err.message);
+    if (!silent) alert('Bağlantı hatası:\n' + err.message);
+    btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Token'ı backend'e kaydet
+══════════════════════════════════════════ */
+async function registerTokenToBackend(token) {
+  const url = getRenderUrl();
+  try {
+    const res = await fetch(url + '/api/register-token', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        contactId:   selectedContactIdx,
+        token,
+        deviceLabel: navigator.userAgent.slice(0, 60)
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await res.json();
+    console.log('[Caregiver] Token kaydedildi:', data);
+  } catch (err) {
+    console.warn('[Caregiver] Backend bağlantı hatası:', err.message);
+  }
+}
+
+/* ══════════════════════════════════════════
+   Bildirim listesi
+══════════════════════════════════════════ */
+function appendNotif(notif, save) {
+  const feed = document.getElementById('notif-feed');
+
+  // "Henüz bildirim yok" mesajını kaldır
+  const empty = feed.querySelector('.empty-state');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'notif-item';
+
+  const date = new Date(notif.ts);
+  const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = date.toLocaleDateString('tr-TR');
+
+  let mapsHtml = '';
+  if (notif.lat && notif.lng) {
+    const mapsUrl = 'https://www.google.com/maps?q=' + notif.lat + ',' + notif.lng;
+    mapsHtml = '<br><a class="maps-link" href="' + mapsUrl + '" target="_blank">📍 Konumu Görüntüle</a>';
+  }
+
+  item.innerHTML =
+    '<div class="msg">💬 ' + escapeHtml(notif.msg) + '</div>' +
+    '<div class="meta">⏰ ' + dateStr + ' ' + timeStr + '</div>' +
+    mapsHtml;
+
+  feed.insertBefore(item, feed.firstChild);
+
+  if (save) {
+    notifications.unshift(notif);
+    try {
+      localStorage.setItem(NOTIF_FEED_KEY, JSON.stringify(notifications.slice(0, 50)));
+    } catch(_) {}
+  }
+}
+
+function clearFeed() {
+  notifications.length = 0;
+  localStorage.removeItem(NOTIF_FEED_KEY);
+  document.getElementById('notif-feed').innerHTML =
+    '<div class="empty-state"><span class="emoji">🔕</span>Geçmiş temizlendi.</div>';
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
