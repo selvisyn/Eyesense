@@ -1452,7 +1452,7 @@ function renderQmMsgs(){
     const div = document.createElement('div');
     div.className = 'qm-msg';
     div.dataset.idx = i;
-    div.innerHTML = \`<span class="qmm-icon">\${m.i}</span><span class="qmm-text">\${m.t}</span><button class="qmm-del" onclick="qmDeleteMessage(\${i})" title="Sil" style="margin-left:auto;background:none;border:none;color:rgba(255,80,80,0.7);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;">✕</button><div class="qm-dwell"></div>\`;
+    div.innerHTML = '<span class="qmm-icon">'+m.i+'</span><span class="qmm-text">'+m.t+'</span><button class="qmm-del" onclick="qmDeleteMessage('+i+')" title="Sil" style="margin-left:auto;background:none;border:none;color:rgba(255,80,80,0.7);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;">✕</button><div class="qm-dwell"></div>';
     list.appendChild(div);
   });
   // placeholder'ı dile göre güncelle
