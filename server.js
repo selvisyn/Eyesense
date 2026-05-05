@@ -6,6 +6,7 @@
 const express = require('express');
 const cors    = require('cors');
 const admin   = require('firebase-admin');
+const path    = require('path');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,10 @@ try {
 
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '50kb' }));
+
+/* ── Statik dosyalar: public/ klasörü (style.css, HTML dosyaları vb.) ── */
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use((req, _res, next) => {
   console.log(new Date().toISOString(), req.method, req.path);
   next();
@@ -39,7 +44,9 @@ app.get('/', (_req, res) => {
 
 app.post('/api/register-token', async (req, res) => {
   const { contactId, token, deviceLabel } = req.body;
-  if (contactId === undefined || contactId === null || !token)({ error: 'contactId ve token gerekli' });
+  if (contactId === undefined || contactId === null || !token) {
+    return res.status(400).json({ error: 'contactId ve token gerekli' });
+  }
 
   console.log('Token kayit istegi alindi, contactId:', contactId);
 
@@ -108,8 +115,8 @@ app.post('/api/notify-caregiver', async (req, res) => {
 
   const title    = 'EyeSense — ' + contactName;
   const bodyText = (location && location.lat && location.lng && !isNaN(location.lat) && !isNaN(location.lng))
-  ? message + ' 📍 ' + Number(location.lat).toFixed(4) + ', ' + Number(location.lng).toFixed(4)
-  : message;
+    ? message + ' 📍 ' + Number(location.lat).toFixed(4) + ', ' + Number(location.lng).toFixed(4)
+    : message;
 
   const base = {
     notification: { title, body: bodyText },
