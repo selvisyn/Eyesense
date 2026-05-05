@@ -361,11 +361,7 @@
         <div class="lw-value" id="locValue">Alınıyor…</div>
       </div>
     </div>
-    <button id="panicBtn" onclick="triggerPanic()">
-      <span class="pa-icon">🆘</span>
-      <span class="pa-label" id="panicLabel">PANİK</span>
-      <div class="pa-dwell" id="panicDwell"></div>
-    </button>
+
   </div>
 
   <!-- Scrollable content -->
@@ -552,17 +548,17 @@
 
   <!-- Quick messages -->
   <div class="qm-section-title" id="qmMsgLabel">Hazır Mesajlar</div>
-  <div class="qm-msgs" id="qmMsgsList">
-    <div class="qm-msg" data-idx="0"><span class="qmm-icon">🆘</span><span class="qmm-text">Yardıma ihtiyacım var, lütfen gel.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="1"><span class="qmm-icon">😊</span><span class="qmm-text">İyiyim, merak etme.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="2"><span class="qmm-icon">🍽️</span><span class="qmm-text">Açım, yemek getirir misin?</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="3"><span class="qmm-icon">💊</span><span class="qmm-text">İlaç zamanım geldi.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="4"><span class="qmm-icon">🚿</span><span class="qmm-text">Banyoya gitmem lazım.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="5"><span class="qmm-icon">😴</span><span class="qmm-text">Uyumak istiyorum.</span><div class="qm-dwell"></div></div>
+  <div class="qm-msgs" id="qmMsgsList"></div>
+
+  <!-- Add new message -->
+  <div id="qmAddRow" style="display:flex;gap:8px;margin-top:10px;max-width:540px;align-self:center;width:100%;">
+    <input id="qmNewIcon" type="text" maxlength="2" placeholder="😀" style="width:52px;text-align:center;font-size:20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 4px;">
+    <input id="qmNewText" type="text" maxlength="80" placeholder="Yeni mesaj yaz…" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 12px;font-size:14px;">
+    <button class="btn-s" onclick="qmAddMessage()" style="padding:8px 14px;">➕</button>
   </div>
 
   <!-- Edit contacts button -->
-  <button class="btn-s" style="margin-top:16px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
+  <button class="btn-s" style="margin-top:10px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
 </div>
 
 <!-- PHRASE BOARD -->
@@ -1255,7 +1251,7 @@ function dispatchGaze(gx,gy,dt){
   if($('kbPanel').style.display==='flex') updateKbDwells(gx,gy,Math.min(dt,80));
   if($('iotPanel').style.display==='flex') updateIotDwells(gx,gy,Math.min(dt,80));
   if(mainUI.style.display==='flex') updateMainMenuDwells(gx,gy,Math.min(dt,80));
-  if(mainUI.style.display==='flex') updatePanicDwell(gx,gy,Math.min(dt,80));
+
   updateGazeBack(gx,gy,Math.min(dt,80));
   updateGlobalPanelBack(gx,gy,Math.min(dt,80));
   if($('visionPanel').style.display==='flex') updateVisionDwells(gx,gy,Math.min(dt,80));
@@ -1410,18 +1406,87 @@ function closeArch(){ $('archPanel').style.display='none'; popPage(); }
 // ══════════════════════════════════════════════════════
 // QUICK MSG
 // ══════════════════════════════════════════════════════
-const QM_STORAGE_KEY = 'es_qm_contacts';
+const QM_STORAGE_KEY     = 'es_qm_contacts';
+const QM_MSG_STORAGE_KEY = 'es_qm_messages';
+
 const QM_DEFAULT_CONTACTS = [
   {name:'Kişi 1', role:'Refakatçi', avatar:'👤', phone:''},
 ];
 let qmContacts = JSON.parse(localStorage.getItem(QM_STORAGE_KEY)||'null') || QM_DEFAULT_CONTACTS;
+
+const QM_DEFAULT_MESSAGES_TR = [
+  {i:'🆘', t:'Yardıma ihtiyacım var, lütfen gel.'},
+  {i:'😊', t:'İyiyim, merak etme.'},
+  {i:'🍽️', t:'Açım, yemek getirir misin?'},
+  {i:'💊', t:'İlaç zamanım geldi.'},
+  {i:'🚿', t:'Banyoya gitmem lazım.'},
+  {i:'😴', t:'Uyumak istiyorum.'},
+];
+const QM_DEFAULT_MESSAGES_EN = [
+  {i:'🆘', t:'I need help, please come.'},
+  {i:'😊', t:"I'm fine, don't worry."},
+  {i:'🍽️', t:"I'm hungry, can you bring food?"},
+  {i:'💊', t:"It's time for my medication."},
+  {i:'🚿', t:'I need to use the bathroom.'},
+  {i:'😴', t:'I want to sleep.'},
+];
+
+let qmMessages = JSON.parse(localStorage.getItem(QM_MSG_STORAGE_KEY)||'null') || null;
+
+function getQmMessages(){
+  if(qmMessages) return qmMessages;
+  return appLang==='en' ? QM_DEFAULT_MESSAGES_EN : QM_DEFAULT_MESSAGES_TR;
+}
+
+function saveQmMessages(msgs){
+  qmMessages = msgs;
+  localStorage.setItem(QM_MSG_STORAGE_KEY, JSON.stringify(msgs));
+}
+
+function renderQmMsgs(){
+  const list = $('qmMsgsList');
+  if(!list) return;
+  const msgs = getQmMessages();
+  list.innerHTML = '';
+  msgs.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.className = 'qm-msg';
+    div.dataset.idx = i;
+    div.innerHTML = \`<span class="qmm-icon">\${m.i}</span><span class="qmm-text">\${m.t}</span><button class="qmm-del" onclick="qmDeleteMessage(\${i})" title="Sil" style="margin-left:auto;background:none;border:none;color:rgba(255,80,80,0.7);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;">✕</button><div class="qm-dwell"></div>\`;
+    list.appendChild(div);
+  });
+  // placeholder'ı dile göre güncelle
+  const inp = $('qmNewText');
+  if(inp) inp.placeholder = appLang==='en' ? 'Type new message…' : 'Yeni mesaj yaz…';
+  bindQmDwells();
+}
+
+function qmAddMessage(){
+  const iconEl = $('qmNewIcon');
+  const textEl = $('qmNewText');
+  const icon = (iconEl.value.trim()) || '💬';
+  const text = textEl.value.trim();
+  if(!text){ showBlinkFlash(appLang==='en'?'Enter a message':'Mesaj girin'); return; }
+  const msgs = getQmMessages().slice();
+  msgs.push({i:icon, t:text});
+  saveQmMessages(msgs);
+  iconEl.value=''; textEl.value='';
+  renderQmMsgs();
+}
+
+function qmDeleteMessage(idx){
+  const msgs = getQmMessages().slice();
+  msgs.splice(idx, 1);
+  saveQmMessages(msgs);
+  renderQmMsgs();
+}
 
 function openQuickMsg(){
   $('quickMsgPanel').style.display='flex';
   pushPage('quickMsgPanel');
   renderQmContacts();
   applyQmI18n();
-  bindQmDwells();
+  renderQmMsgs();
 }
 function closeQuickMsg(){
   $('quickMsgPanel').style.display='none';
@@ -1442,19 +1507,7 @@ function applyQmI18n(){
     if($('qmTitle')) $('qmTitle').textContent='📲 Quick Message';
     if($('qmMsgLabel')) $('qmMsgLabel').textContent='Quick Messages';
     if($('qmEditLabel')) $('qmEditLabel').textContent='Edit Contacts';
-    // English quick messages
-    const msgs=[
-      {i:'🆘',t:"I need help, please come."},
-      {i:'😊',t:"I'm fine, don't worry."},
-      {i:'🍽️',t:"I'm hungry, can you bring food?"},
-      {i:'💊',t:"It's time for my medication."},
-      {i:'🚿',t:"I need to use the bathroom."},
-      {i:'😴',t:"I want to sleep."},
-    ];
-    const list=$('qmMsgsList');
-    if(list) list.querySelectorAll('.qm-msg').forEach((el,i)=>{
-      if(msgs[i]){ el.querySelector('.qmm-icon').textContent=msgs[i].i; el.querySelector('.qmm-text').textContent=msgs[i].t; }
-    });
+    // Mesajlar renderQmMsgs() tarafından yönetilir
     // Contact roles
     const re0=document.getElementById('qmc0role');
     if(re0&&re0.textContent==='Refakatçi') re0.textContent='Caregiver';
@@ -5063,7 +5116,7 @@ function startLocationTracking(){
   setLocVal(t('locLoading'));
   if(locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
   locationWatchId=navigator.geolocation.watchPosition(
-    pos=>{ lastLocation=pos.coords; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
+    pos=>{ lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy}; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
     err=>{ const c=JSON.parse(localStorage.getItem('es_loc')||'null'); if(c){setLocVal(c.d);}else{setLocVal(err.code===1?t('locDenied'):t('locError'));} },
     {enableHighAccuracy:false,maximumAge:60000,timeout:12000}
   );
@@ -5083,34 +5136,8 @@ function setLocVal(v){ const el=document.getElementById('locValue'); if(el) el.t
 
 // ── PANIC BUTTON ──────────────────────────────────────
 let panicArmed=false, panicElapsed=0;
-function triggerPanic(){
-  if(panicArmed) return;
-  panicArmed=true;
-  const btn=document.getElementById('panicBtn');
-  if(btn){ btn.style.background='rgba(220,38,38,0.45)'; btn.style.borderColor='#ff2222'; }
-  speak(t('sosAudio'));
-  const f=document.getElementById('blinkFlash');
-  if(f){ f.textContent=t('sosSending'); f.style.display='block'; }
-  const sos={timestamp:new Date().toISOString(),location:lastLocation?{lat:lastLocation.latitude,lon:lastLocation.longitude}:null,lang:appLang};
-  console.log('[EyeSense SOS]',sos);
-  setTimeout(()=>{
-    if(f){ f.textContent=t('sosSent'); }
-    setTimeout(()=>{ if(f) f.style.display='none'; },3500);
-    if(btn){ btn.style.background=''; btn.style.borderColor=''; }
-    panicArmed=false; panicElapsed=0;
-  },3000);
-}
-function updatePanicDwell(gx,gy,dt){
-  if(mainUI.style.display!=='flex') return;
-  const btn=document.getElementById('panicBtn'); if(!btn) return;
-  const r=btn.getBoundingClientRect();
-  const inside=gx>=r.left&&gx<=r.right&&gy>=r.top&&gy<=r.bottom;
-  if(inside){panicElapsed+=dt;btn.classList.add('gazing');}
-  else{panicElapsed=Math.max(0,panicElapsed-dt*2);btn.classList.remove('gazing');}
-  const pct=Math.min(1,panicElapsed/(DWELL_MS*2));
-  const dw=document.getElementById('panicDwell'); if(dw) dw.style.width=(pct*100)+'%';
-  if(pct>=1){panicElapsed=0;if(dw)dw.style.width='0%';triggerPanic();}
-}
+function triggerPanic(){}
+function updatePanicDwell(){}
 
 function initStart(){
   setTheme(currentTheme); setInputMode(inputMode);
