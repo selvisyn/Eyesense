@@ -10,51 +10,88 @@
 <title>EyeSense Caregiver Panel</title>
 
   <link rel="stylesheet" href="caregiver.css">
+
 </head>
-<body class="caregiver-page">
+<body>
 
-<!-- Header -->
-<div class="header">
-  <div class="logo">👁️</div>
-  <h1>EyeSense Refakatçi Paneli</h1>
-</div>
-
-<!-- Bildirim Durumu -->
-<div class="card">
-  <h2>📡 Bildirim Durumu</h2>
-  <div class="status-badge idle" id="status-badge">
-    <span class="dot" id="status-dot"></span>
-    <span id="status-text">Henüz bağlanmadı</span>
-  </div>
-  <button class="btn btn-primary" id="btn-connect" onclick="connectNotifications()">
-    🔔 Bildirimlere İzin Ver &amp; Bağlan
-  </button>
-</div>
-
-<!-- Alınan Bildirimler -->
-<div class="card">
-  <h2>📩 Alınan Bildirimler</h2>
-  <div id="notif-feed">
-    <div class="empty-state">
-      <span class="emoji">🔕</span>
-      Henüz bildirim alınmadı.<br>Bağlandıktan sonra EyeSense mesajları burada görünür.
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-icon">👁️</div>
+    <div>
+      <div class="topbar-title" id="tb-title">Refakatçi Paneli</div>
+      <div class="topbar-sub" id="tb-sub">EyeSense v14</div>
     </div>
   </div>
-  <button class="btn btn-secondary" onclick="clearFeed()" style="margin-top:8px;font-size:13px">
-    🗑️ Geçmişi Temizle
-  </button>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="lang-tr" onclick="setLang('tr')">TR</button>
+    <button class="lang-btn"        id="lang-en" onclick="setLang('en')">EN</button>
+  </div>
 </div>
 
-<div class="footer">EyeSense v14 · Refakatçi Paneli</div>
+<!-- ── Page ── -->
+<div class="page">
+
+  <!-- Status Hero -->
+  <div class="status-hero" id="status-hero">
+    <div class="status-hero-top">
+      <span class="status-label" id="lbl-status-section">Bağlantı Durumu</span>
+      <div class="status-pill idle" id="status-pill">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Bağlı Değil</span>
+      </div>
+    </div>
+    <div class="status-hero-body">
+      <div class="status-ring" id="status-ring">
+        <span class="status-ring-icon">📡</span>
+      </div>
+      <div class="status-text-block">
+        <div class="status-main-text" id="status-main">Bildirimler Devre Dışı</div>
+        <div class="status-sub-text"  id="status-sub">EyeSense cihazından mesaj almak için bağlanın.</div>
+      </div>
+    </div>
+    <button class="btn-connect btn-connect-inner" id="btn-connect" onclick="connectNotifications()">
+      <span id="btn-connect-icon">🔔</span>
+      <span id="btn-connect-text">Bildirimlere Bağlan</span>
+    </button>
+  </div>
+
+  <!-- Notification Feed -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-title-dot"></span>
+        <span id="lbl-notifs">Gelen Bildirimler</span>
+      </div>
+      <div id="notif-count" class="card-badge">0</div>
+    </div>
+    <div id="notif-feed">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🔕</div>
+        <div class="empty-text" id="empty-text">
+          Henüz bildirim yok.<br>Bağlandıktan sonra EyeSense mesajları burada görünür.
+        </div>
+      </div>
+    </div>
+    <div class="divider" style="margin-top:12px;"></div>
+    <button class="btn-clear" id="btn-clear" onclick="clearFeed()">
+      <span>🗑</span>
+      <span id="btn-clear-text">Geçmişi Temizle</span>
+    </button>
+  </div>
+
+</div><!-- /page -->
+
+<div class="footer">EyeSense <span>v14</span> · Caregiver Panel</div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
 
 <script>
-/* ══════════════════════════════════════════
-   CONFIG — Kendi değerlerinle doldur
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   FIREBASE CONFIG
+══════════════════════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyAtJxtqc89Iyxk165LEFQCWzAj4N2K-7Xg",
   authDomain:        "eyesense-53f01.firebaseapp.com",
@@ -64,126 +101,231 @@ const FIREBASE_CONFIG = {
   appId:             "1:577546876245:web:5cadd6c853ec23cb16abdc"
 };
 
-// VAPID key: Firebase Console → Cloud Messaging → Web Configuration → Key pair
-// Oluşturup buraya yapıştırın:
-const VAPID_KEY = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
+const VAPID_KEY   = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
+const BACKEND_URL = 'https://eyesense-backend.onrender.com';
 
-/* ══════════════════════════════════════════
-   State
-══════════════════════════════════════════ */
-const selectedContactIdx = 0;  /* Tek kullanıcı: sabit 0 */
-let currentToken       = null;
-let messaging          = null;
-const notifications    = [];
+/* ══════════════════════════════════════════════════════════
+   I18N
+══════════════════════════════════════════════════════════ */
+const STRINGS = {
+  tr: {
+    tbTitle:          'Refakatçi Paneli',
+    tbSub:            'EyeSense v14',
+    lblStatusSection: 'Bağlantı Durumu',
+    lblNotifs:        'Gelen Bildirimler',
+    btnConnect:       'Bildirimlere Bağlan',
+    btnReconnect:     'Yeniden Bağlan',
+    btnClear:         'Geçmişi Temizle',
+    statusIdle:       'Bağlı Değil',
+    statusConnecting: 'Bağlanıyor…',
+    statusOk:         'Canlı',
+    statusError:      'Hata',
+    mainIdle:         'Bildirimler Devre Dışı',
+    mainConnecting:   'Bağlantı Kuruluyor',
+    mainOk:           'Bildirimler Aktif',
+    mainError:        'Bağlantı Başarısız',
+    subIdle:          'EyeSense cihazından mesaj almak için bağlanın.',
+    subConnecting:    'Lütfen bekleyin…',
+    subOk:            'EyeSense mesajları gerçek zamanlı alınıyor.',
+    subError:         (msg) => `${msg}`,
+    emptyNotifs:      'Henüz bildirim yok.\nBağlandıktan sonra EyeSense mesajları burada görünür.',
+    cleared:          'Geçmiş temizlendi.',
+    mapsLink:         'Konumu Gör',
+    errNoSW:          'Bu tarayıcı Service Worker desteklemiyor',
+    errPermission:    'Bildirim izni reddedildi',
+    errNoToken:       'FCM token alınamadı',
+  },
+  en: {
+    tbTitle:          'Caregiver Panel',
+    tbSub:            'EyeSense v14',
+    lblStatusSection: 'Connection Status',
+    lblNotifs:        'Incoming Alerts',
+    btnConnect:       'Connect Notifications',
+    btnReconnect:     'Reconnect',
+    btnClear:         'Clear History',
+    statusIdle:       'Disconnected',
+    statusConnecting: 'Connecting…',
+    statusOk:         'Live',
+    statusError:      'Error',
+    mainIdle:         'Notifications Off',
+    mainConnecting:   'Establishing Connection',
+    mainOk:           'Notifications Active',
+    mainError:        'Connection Failed',
+    subIdle:          'Connect to receive messages from EyeSense.',
+    subConnecting:    'Please wait…',
+    subOk:            'EyeSense alerts are being received in real time.',
+    subError:         (msg) => `${msg}`,
+    emptyNotifs:      'No notifications yet.\nConnect to start receiving EyeSense messages.',
+    cleared:          'History cleared.',
+    mapsLink:         'View Location',
+    errNoSW:          'This browser does not support Service Workers',
+    errPermission:    'Notification permission denied',
+    errNoToken:       'Failed to get FCM token',
+  }
+};
 
+let lang = localStorage.getItem('es_cg_lang') || 'tr';
+
+function t(key, ...args) {
+  const val = STRINGS[lang][key];
+  return typeof val === 'function' ? val(...args) : (val ?? key);
+}
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('es_cg_lang', l);
+  document.documentElement.lang = l;
+  document.getElementById('lang-tr').classList.toggle('active', l === 'tr');
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  applyStrings();
+  // Re-render feed for date locale
+  rerenderFeed();
+}
+
+function applyStrings() {
+  document.getElementById('tb-title').textContent          = t('tbTitle');
+  document.getElementById('tb-sub').textContent            = t('tbSub');
+  document.getElementById('lbl-status-section').textContent = t('lblStatusSection');
+  document.getElementById('lbl-notifs').textContent        = t('lblNotifs');
+  document.getElementById('btn-connect-text').textContent  = connected ? t('btnReconnect') : t('btnConnect');
+  document.getElementById('btn-clear-text').textContent    = t('btnClear');
+
+  const emptyEl = document.getElementById('empty-text');
+  if (emptyEl) {
+    emptyEl.innerHTML = t('emptyNotifs').replace('\n', '<br>');
+  }
+
+  // Sync status display text if currently idle
+  if (!connected && !connecting) {
+    document.getElementById('status-text').textContent = t('statusIdle');
+    document.getElementById('status-main').textContent = t('mainIdle');
+    document.getElementById('status-sub').textContent  = t('subIdle');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+const selectedContactIdx = 0;
+let currentToken    = null;
+let messaging       = null;
+let connected       = false;
+let connecting      = false;
+const notifications = [];
 const NOTIF_FEED_KEY = 'es_caregiver_feed';
 
-/* ══════════════════════════════════════════
-   Init
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // Kayıtlı bildirimleri yükle
+  // Apply saved language
+  document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  applyStrings();
+
+  // Load saved notifications
   try {
-    const feed = JSON.parse(localStorage.getItem(NOTIF_FEED_KEY) || '[]');
-    feed.forEach(n => appendNotif(n, false));
+    const saved = JSON.parse(localStorage.getItem(NOTIF_FEED_KEY) || '[]');
+    saved.forEach(n => appendNotif(n, false));
   } catch(_) {}
 
-  // Her açılışta token'ı yenile ve backend'e kaydet
+  // Auto-reconnect if permission already granted
   if (Notification.permission === 'granted') {
-    connectNotifications(true);  // sessiz bağlan, token'ı Firestore'a yeniden kaydet
+    connectNotifications(true);
   }
 });
 
-/* ══════════════════════════════════════════
-   Render URL
-══════════════════════════════════════════ */
-/* Backend URL — sabit tanım, UI girişi yok */
-const BACKEND_URL = 'https://eyesense-backend.onrender.com';
-function getRenderUrl() { return BACKEND_URL; }
+/* ══════════════════════════════════════════════════════════
+   STATUS HELPERS
+══════════════════════════════════════════════════════════ */
+function setStatus(state, mainText, subText) {
+  const pill   = document.getElementById('status-pill');
+  const dot    = document.getElementById('status-dot');
+  const hero   = document.getElementById('status-hero');
+  const ring   = document.getElementById('status-ring');
 
+  pill.className = 'status-pill ' + state;
+  dot.className  = 'status-dot' + (state === 'loading' ? ' pulse' : '');
+  document.getElementById('status-text').textContent = t('status' + capitalize(state === 'loading' ? 'connecting' : state));
+  document.getElementById('status-main').textContent = mainText;
+  document.getElementById('status-sub').textContent  = subText;
 
-
-/* ══════════════════════════════════════════
-   Status helpers
-══════════════════════════════════════════ */
-function setStatus(state, text) {
-  const badge = document.getElementById('status-badge');
-  const dot   = document.getElementById('status-dot');
-  badge.className = 'status-badge ' + state;
-  dot.className   = 'dot' + (state === 'loading' ? ' pulse' : '');
-  document.getElementById('status-text').textContent = text;
+  hero.classList.toggle('connected', state === 'ok');
+  ring.classList.toggle('visible',   state === 'ok');
 }
 
-/* ══════════════════════════════════════════
-   FCM bağlantısı
-══════════════════════════════════════════ */
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ══════════════════════════════════════════════════════════
+   FCM CONNECTION
+══════════════════════════════════════════════════════════ */
 async function connectNotifications(silent = false) {
   const btn = document.getElementById('btn-connect');
   btn.disabled = true;
-  setStatus('loading', 'Bağlanıyor…');
+  connecting = true;
+  setStatus('loading', t('mainConnecting'), t('subConnecting'));
 
   try {
-    // Service Worker kaydı
-    if (!('serviceWorker' in navigator)) throw new Error('Bu tarayıcı Service Worker desteklemiyor');
+    if (!('serviceWorker' in navigator)) throw new Error(t('errNoSW'));
 
-    // SW yolunu dinamik belirle (GitHub Pages alt klasör sorununu önler)
     const swPath = new URL('./firebase-messaging-sw.js', location.href).pathname;
-    const swReg = await navigator.serviceWorker.register(swPath);
-    console.log('[Caregiver] SW kayıtlı:', swReg.scope);
+    const swReg  = await navigator.serviceWorker.register(swPath);
+    console.log('[Caregiver] SW registered:', swReg.scope);
 
-    // Firebase başlat — zaten başlatılmışsa mevcut uygulamayı kullan
     if (firebase.apps.length === 0) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
     messaging = firebase.messaging();
 
-    // Bildirim izni iste
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error('Bildirim izni reddedildi');
+    if (permission !== 'granted') throw new Error(t('errPermission'));
 
-    // FCM token al
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-    if (!token) throw new Error('FCM token alınamadı');
+    if (!token) throw new Error(t('errNoToken'));
 
     currentToken = token;
     console.log('[Caregiver] FCM Token:', token);
 
-    // Backend'e kaydet
     await registerTokenToBackend(token);
 
-    // Ön planda gelen bildirimleri dinle
+    // Foreground messages
     messaging.onMessage((payload) => {
-      console.log('[Caregiver] Ön plan bildirimi:', payload);
+      console.log('[Caregiver] Foreground message:', payload);
       const notif = {
-        msg:  payload.notification?.body || payload.data?.message || '(mesaj yok)',
-        ts:   payload.data?.ts || new Date().toISOString(),
-        lat:  payload.data?.lat || '',
-        lng:  payload.data?.lng || ''
+        msg: payload.notification?.body || payload.data?.message || '—',
+        ts:  payload.data?.ts || new Date().toISOString(),
+        lat: payload.data?.lat || '',
+        lng: payload.data?.lng || ''
       };
       appendNotif(notif, true);
-      // Ses çal
       try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play().catch(()=>{}); } catch(_) {}
     });
 
-    setStatus('ok', '✅ Bildirimler aktif — hazır');
-    btn.textContent = '✅ Bağlandı (yeniden bağlan)';
+    connected  = true;
+    connecting = false;
+    setStatus('ok', t('mainOk'), t('subOk'));
+    document.getElementById('btn-connect-icon').textContent = '✅';
+    document.getElementById('btn-connect-text').textContent  = t('btnReconnect');
     btn.disabled = false;
 
   } catch (err) {
     console.error('[Caregiver]', err);
-    setStatus('error', '❌ ' + err.message);
-    if (!silent) alert('Bağlantı hatası:\n' + err.message);
+    connected  = false;
+    connecting = false;
+    setStatus('error', t('mainError'), t('subError', err.message));
+    document.getElementById('btn-connect-icon').textContent = '🔔';
+    document.getElementById('btn-connect-text').textContent  = t('btnConnect');
+    if (!silent) alert(err.message);
     btn.disabled = false;
   }
 }
 
-/* ══════════════════════════════════════════
-   Token'ı backend'e kaydet
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   REGISTER TOKEN
+══════════════════════════════════════════════════════════ */
 async function registerTokenToBackend(token) {
-  const url = getRenderUrl();
   try {
-    const res = await fetch(url + '/api/register-token', {
+    const res = await fetch(BACKEND_URL + '/api/register-token', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
@@ -194,41 +336,44 @@ async function registerTokenToBackend(token) {
       signal: AbortSignal.timeout(8000)
     });
     const data = await res.json();
-    console.log('[Caregiver] Token kaydedildi:', data);
+    console.log('[Caregiver] Token registered:', data);
   } catch (err) {
-    console.warn('[Caregiver] Backend bağlantı hatası:', err.message);
+    console.warn('[Caregiver] Backend error:', err.message);
   }
 }
 
-/* ══════════════════════════════════════════
-   Bildirim listesi
-══════════════════════════════════════════ */
-function appendNotif(notif, save) {
-  const feed = document.getElementById('notif-feed');
-
-  // "Henüz bildirim yok" mesajını kaldır
-  const empty = feed.querySelector('.empty-state');
-  if (empty) empty.remove();
+/* ══════════════════════════════════════════════════════════
+   NOTIFICATION FEED
+══════════════════════════════════════════════════════════ */
+function appendNotif(notif, save, isNew = false) {
+  const feed     = document.getElementById('notif-feed');
+  const emptyEl  = document.getElementById('empty-state');
+  if (emptyEl) emptyEl.remove();
 
   const item = document.createElement('div');
-  item.className = 'notif-item';
+  item.className = 'notif-item' + (isNew ? ' new' : '');
+  item.dataset.notif = JSON.stringify(notif);
 
-  const date = new Date(notif.ts);
-  const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = date.toLocaleDateString('tr-TR');
+  const locale  = lang === 'tr' ? 'tr-TR' : 'en-GB';
+  const date    = new Date(notif.ts);
+  const timeStr = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const dateStr = date.toLocaleDateString(locale,  { day: '2-digit', month: 'short' });
 
   let mapsHtml = '';
   if (notif.lat && notif.lng) {
     const mapsUrl = 'https://www.google.com/maps?q=' + notif.lat + ',' + notif.lng;
-    mapsHtml = '<br><a class="maps-link" href="' + mapsUrl + '" target="_blank">📍 Konumu Görüntüle</a>';
+    mapsHtml = `<a class="notif-maps" href="${mapsUrl}" target="_blank">📍 ${t('mapsLink')}</a>`;
   }
 
-  item.innerHTML =
-    '<div class="msg">💬 ' + escapeHtml(notif.msg) + '</div>' +
-    '<div class="meta">⏰ ' + dateStr + ' ' + timeStr + '</div>' +
-    mapsHtml;
+  item.innerHTML = `
+    <div class="notif-msg">💬 ${escapeHtml(notif.msg)}</div>
+    <div class="notif-meta">
+      <span class="notif-time">${dateStr} · ${timeStr}</span>
+      ${mapsHtml}
+    </div>`;
 
   feed.insertBefore(item, feed.firstChild);
+  updateCount();
 
   if (save) {
     notifications.unshift(notif);
@@ -238,20 +383,50 @@ function appendNotif(notif, save) {
   }
 }
 
+function rerenderFeed() {
+  // Re-render time strings in current language locale
+  document.querySelectorAll('.notif-item').forEach(item => {
+    try {
+      const notif   = JSON.parse(item.dataset.notif || '{}');
+      const locale  = lang === 'tr' ? 'tr-TR' : 'en-GB';
+      const date    = new Date(notif.ts);
+      const timeStr = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString(locale,  { day: '2-digit', month: 'short' });
+      const timeEl  = item.querySelector('.notif-time');
+      if (timeEl) timeEl.textContent = `${dateStr} · ${timeStr}`;
+      const mapsEl = item.querySelector('.notif-maps');
+      if (mapsEl) mapsEl.childNodes[1] && (mapsEl.lastChild.textContent = ' ' + t('mapsLink'));
+    } catch(_) {}
+  });
+}
+
 function clearFeed() {
   notifications.length = 0;
   localStorage.removeItem(NOTIF_FEED_KEY);
-  document.getElementById('notif-feed').innerHTML =
-    '<div class="empty-state"><span class="emoji">🔕</span>Geçmiş temizlendi.</div>';
+  const feed = document.getElementById('notif-feed');
+  feed.innerHTML = `
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🔕</div>
+      <div class="empty-text" id="empty-text">${t('cleared')}</div>
+    </div>`;
+  updateCount();
+}
+
+function updateCount() {
+  const items = document.querySelectorAll('.notif-item').length;
+  const badge = document.getElementById('notif-count');
+  badge.textContent = items;
+  badge.classList.toggle('visible', items > 0);
 }
 
 function escapeHtml(str) {
   return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 </script>
 </body>
 </html>
+
