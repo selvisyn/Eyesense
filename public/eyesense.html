@@ -564,8 +564,7 @@
 <!-- PHRASE BOARD -->
 <div id="phraseBoard">
   <div class="pb-hdr">
-    <b>💬 What do you want to say?</b>
-    <button class="btn-s" id="pbCloseBtn">✕ Close</button>
+    <b id="pbTitle">💬 What do you want to say?</b>
   </div>
   <div class="pb-grid" id="pbGrid"></div>
 </div>
@@ -756,7 +755,7 @@ const I18N = {
     mainSub:'Bakıp bekleyin',menuLabel:'MENÜ',menuHint:'Bakıp bekle',
     smoothing:'Yumuşatma',dwell:'Bekleme',
     locTitle:'KONUMUNUZ',locLoading:'Alınıyor…',locDenied:'İzin verilmedi',locError:'Konum alınamadı',
-    backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
+    pbTitle:'💬 Ne söylemek istiyorsunuz?',backToStart:'⬅ Başlangıç',backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
     calibStart:'Kalibrasyon başlıyor. Ekrandaki her noktaya bakın.',
     calibLook:'Noktaya bakın…',calibHold:'Sakin tutun…',calibCollect:'Veri toplanıyor…',
     calibDone:'Kalibrasyon tamamlandı.',calibCancelled:'Kalibrasyon iptal edildi.',calibLoaded:'Kalibrasyon yüklendi.',
@@ -839,7 +838,7 @@ const I18N = {
     mainSub:'Gaze & hold to select',menuLabel:'MENU',menuHint:'Gaze & hold',
     smoothing:'Smoothing',dwell:'Dwell',
     locTitle:'YOUR LOCATION',locLoading:'Getting location…',locDenied:'Permission denied',locError:'Could not get location',
-    backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
+    pbTitle:'💬 What do you want to say?',backToStart:'⬅ Start',backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
     calibStart:'Calibration starting. Look at each dot on screen.',
     calibLook:'Look at the dot…',calibHold:'Hold still…',calibCollect:'Collecting data…',
     calibDone:'Calibration complete.',calibCancelled:'Calibration cancelled.',calibLoaded:'Calibration loaded.',
@@ -927,8 +926,8 @@ function applyI18n(){
   // Panic label
   const pl=el('panicLabel'); if(pl) pl.textContent=t('btnPanic');
   // Main header
-  const mhs=el('mainMenuSubLabel'); if(mhs) mhs.textContent=t('menuLabel');
-  const mhh=el('mainMenuSubHint'); if(mhh) mhh.textContent=t('menuHint');
+  const mhs=el('mainSectionLabel'); if(mhs) mhs.textContent=t('menuLabel');
+  const mhh=el('mainSectionHint'); if(mhh) mhh.textContent=t('menuHint');
   // Sliders
   const smL=el('smLabel'); if(smL) smL.textContent=t('smoothing');
   const dwL=el('dwLabel'); if(dwL) dwL.textContent=t('dwell');
@@ -938,6 +937,10 @@ function applyI18n(){
     const btnTxt=el('backBtnText'); if(btnTxt) btnTxt.textContent=t('backBtn');
     const hint=gpb.querySelector('.pb-hint'); if(hint) hint.textContent=t('backHint');
   }
+  // Phrase board title
+  const pbt=el('pbTitle'); if(pbt) pbt.textContent=t('pbTitle');
+  // Back to start button
+  const btsb=el('backToStartBtn'); if(btsb) btsb.textContent=t('backToStart');
   // Location widget
   const locT=el('locTitle'); if(locT) locT.textContent=t('locTitle');
   // Calib / Eval UI
@@ -5063,7 +5066,6 @@ $('dwellSlider').oninput=e=>{DWELL_MS=e.target.value*100;$('dwellVal').textConte
 $('recalibBtn').onclick=startCalibration;
 $('evalBtn')&&($('evalBtn').onclick=startEvaluation);
 $('phraseBtn').onclick=openPhraseBoard;
-$('pbCloseBtn').onclick=closePhraseBoard;
 $('outputClose').onclick=()=>{output.style.display='none';};
 $('repDoneBtn').onclick=showMainMode;
 $('repRecalBtn').onclick=startCalibration;
@@ -5118,7 +5120,7 @@ function startLocationTracking(){
   locationWatchId=navigator.geolocation.watchPosition(
     pos=>{ lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy}; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
     err=>{ const c=JSON.parse(localStorage.getItem('es_loc')||'null'); if(c){setLocVal(c.d);}else{setLocVal(err.code===1?t('locDenied'):t('locError'));} },
-    {enableHighAccuracy:true, maximumAge:0, timeout:15000}
+    {enableHighAccuracy:false,maximumAge:60000,timeout:12000}
   );
 }
 async function reverseGeocode(lat,lon){
