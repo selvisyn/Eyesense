@@ -1495,10 +1495,22 @@ async function qmSendMsg(text, contactIdx=0){
   showBlinkFlash('💬 '+text.slice(0,40)+(text.length>40?'…':''));
 
   // 2. Konum bilgisi (varsa)
-  let location = null;
-  if(typeof lastLocation !== 'undefined' && lastLocation){
-    location = { lat: lastLocation.lat, lng: lastLocation.lng };
-  }
+ let location = null;
+if(typeof lastLocation !== 'undefined' && lastLocation){
+  location = { lat: lastLocation.lat, lng: lastLocation.lng };
+} else {
+  await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      pos => { 
+        lastLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        location = { lat: lastLocation.lat, lng: lastLocation.lng };
+        resolve();
+      },
+      () => resolve(),
+      { timeout: 5000, maximumAge: 30000 }
+    );
+  });
+}
 
   const contact = (typeof qmContacts !== 'undefined' && qmContacts[contactIdx])
     ? qmContacts[contactIdx]
