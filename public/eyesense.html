@@ -5118,7 +5118,7 @@ function startLocationTracking(){
   locationWatchId=navigator.geolocation.watchPosition(
     pos=>{ lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy}; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
     err=>{ const c=JSON.parse(localStorage.getItem('es_loc')||'null'); if(c){setLocVal(c.d);}else{setLocVal(err.code===1?t('locDenied'):t('locError'));} },
-    {enableHighAccuracy:false,maximumAge:60000,timeout:12000}
+    {enableHighAccuracy:true, maximumAge:0, timeout:15000}
   );
 }
 async function reverseGeocode(lat,lon){
