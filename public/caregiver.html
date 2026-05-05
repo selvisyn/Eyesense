@@ -275,6 +275,11 @@ async function connectNotifications(silent = false) {
     }
     messaging = firebase.messaging();
 
+    if (connected) {
+      btn.disabled = false;
+      return;
+    }
+
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') throw new Error(t('errPermission'));
 
