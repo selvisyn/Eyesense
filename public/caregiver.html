@@ -286,18 +286,21 @@ async function connectNotifications(silent = false) {
 
     await registerTokenToBackend(token);
 
-    // Foreground messages
-    messaging.onMessage((payload) => {
-      console.log('[Caregiver] Foreground message:', payload);
-      const notif = {
-        msg: payload.notification?.body || payload.data?.message || '—',
-        ts:  payload.data?.ts || new Date().toISOString(),
-        lat: payload.data?.lat || '',
-        lng: payload.data?.lng || ''
-      };
-      appendNotif(notif, true);
-      try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play().catch(()=>{}); } catch(_) {}
-    });
+   // Foreground messages — listener'ı yalnızca bir kez kaydet
+if (!window._cgOnMessageBound) {
+  window._cgOnMessageBound = true;
+  messaging.onMessage((payload) => {
+    console.log('[Caregiver] Foreground message:', payload);
+    const notif = {
+      msg: payload.notification?.body || payload.data?.message || '—',
+      ts:  payload.data?.ts || new Date().toISOString(),
+      lat: payload.data?.lat || '',
+      lng: payload.data?.lng || ''
+    };
+    appendNotif(notif, true, true);
+  });
+}
+    
 
     connected  = true;
     connecting = false;
