@@ -1222,45 +1222,91 @@ function onTouchGaze(e){
 }
 function onTouchEnd(){ if(inputMode==='finger') resetAllDwells(); }
 function resetAllDwells(){
-  phraseDwells.forEach(pd=>{pd.elapsed=0;pd.el.classList.remove('gazing');pd.overlay.style.width='0%';});
-  kbDwells.forEach(kd=>{kd.elapsed=0;kd.el.classList.remove('gazing');kd.overlay.style.width='0%';});
-  iotDwells.forEach(id=>{id.elapsed=0;id.el.classList.remove('gazing');id.overlay.style.width='0%';});
+  // EyeSense FIX: tek seçim motoru / arkadaki sekmeleri kilitle
+  // Bir panel açıldığında önce tüm dwell sayaçları sıfırlanır.
+  const resetItem = d => {
+    if(!d) return;
+    d.elapsed = 0;
+    d.dwell = 0;
+    d.fired = false;
+    if(d.el) d.el.classList.remove('gazing');
+    if(d.overlay) d.overlay.style.width = '0%';
+    if(d.ov) d.ov.style.width = '0%';
+  };
+
+  if(typeof phraseDwells !== 'undefined') phraseDwells.forEach(resetItem);
+  if(typeof kbDwells !== 'undefined') kbDwells.forEach(resetItem);
+  if(typeof kbSuggDwells !== 'undefined') kbSuggDwells.forEach(resetItem);
+  if(typeof iotDwells !== 'undefined') iotDwells.forEach(resetItem);
+  if(typeof mainDwells !== 'undefined') mainDwells.forEach(resetItem);
+  if(typeof qmMsgDwells !== 'undefined') qmMsgDwells.forEach(resetItem);
+  if(typeof qmContactDwells !== 'undefined') qmContactDwells.forEach(resetItem);
+  if(typeof visionGazeZoneDwells !== 'undefined') visionGazeZoneDwells.forEach(resetItem);
+
+  document.querySelectorAll('.gazing').forEach(el => el.classList.remove('gazing'));
+  document.querySelectorAll('.btn-dwell,.pb-dwell,.kb-dwell,.iot-dwell,.qm-dwell,.vpb-dwell,.vp-close-dwell,.pb-dwell-bar').forEach(el => {
+    el.style.width = '0%';
+  });
 }
+
 
 // ══════════════════════════════════════════════════════
 // DISPATCH GAZE
 // ══════════════════════════════════════════════════════
-function dispatchGaze(gx,gy,dt){
-  // Iris scroll: only when a scrollable panel is open
-  const anyPanelOpen = phraseBoard.style.display==='flex'
-    || $('a11yPanel').style.display==='flex'
-    || $('diagPanel').style.display==='flex'
-    || $('archPanel').style.display==='flex'
-    || $('howPanel').style.display==='flex'
-    || $('iotPanel').style.display==='flex'
-    || (!reportScreen.classList.contains('hidden'));
+function isAnyPanelOpen(){
+  return (
+    phraseBoard.style.display === 'flex' ||
+    $('kbPanel').style.display === 'flex' ||
+    $('a11yPanel').style.display === 'flex' ||
+    $('visionPanel').style.display === 'flex' ||
+    $('quickMsgPanel').style.display === 'flex' ||
+    $('iotPanel').style.display === 'flex' ||
+    $('howPanel').style.display === 'flex' ||
+    $('diagPanel').style.display === 'flex' ||
+    $('archPanel').style.display === 'flex' ||
+    !reportScreen.classList.contains('hidden')
+  );
+}
 
-  if(anyPanelOpen){
+function dispatchGaze(gx,gy,dt){
+  // EyeSense FIX: aynı anda sadece en üstteki aktif panel dwell alır.
+  // Arkada kalan mainUI veya başka panel artık kendi kendine seçim yapamaz.
+  const safeDt = Math.min(dt, 80);
+  const panelOpen = isAnyPanelOpen();
+
+  if(panelOpen){
     updateIrisScroll(gx, gy);
   } else {
-    // Hide zones when no panel open
     const t=$('scrollZoneTop'), b=$('scrollZoneBottom');
     if(t) t.classList.remove('visible','active');
     if(b) b.classList.remove('visible','active');
     irisScrollVel = 0;
   }
 
-  if(evalActive&&evalDwellTracker) evalDwellTracker.update(gx,gy,performance.now());
-  if(phraseBoard.style.display==='flex') updatePhraseDwells(gx,gy,Math.min(dt,80));
-  if($('kbPanel').style.display==='flex') updateKbDwells(gx,gy,Math.min(dt,80));
-  if($('iotPanel').style.display==='flex') updateIotDwells(gx,gy,Math.min(dt,80));
-  if(mainUI.style.display==='flex') updateMainMenuDwells(gx,gy,Math.min(dt,80));
+  if(evalActive && evalDwellTracker){
+    evalDwellTracker.update(gx, gy, performance.now());
+  }
 
-  updateGazeBack(gx,gy,Math.min(dt,80));
-  updateGlobalPanelBack(gx,gy,Math.min(dt,80));
-  if($('visionPanel').style.display==='flex') updateVisionDwells(gx,gy,Math.min(dt,80));
-  if($('quickMsgPanel').style.display==='flex') updateQmDwells(gx,gy,Math.min(dt,80));
+  // Öncelik sırası: açık panel > ana menü.
+  // Burada else-if kullanılması bilinçli: bir frame içinde iki farklı sekme tetiklenemez.
+  if(phraseBoard.style.display === 'flex'){
+    updatePhraseDwells(gx, gy, safeDt);
+  } else if($('kbPanel').style.display === 'flex'){
+    updateKbDwells(gx, gy, safeDt);
+  } else if($('visionPanel').style.display === 'flex'){
+    updateVisionDwells(gx, gy, safeDt);
+  } else if($('quickMsgPanel').style.display === 'flex'){
+    updateQmDwells(gx, gy, safeDt);
+  } else if($('iotPanel').style.display === 'flex'){
+    updateIotDwells(gx, gy, safeDt);
+  } else if(mainUI.style.display === 'flex' && !panelOpen){
+    updateMainMenuDwells(gx, gy, safeDt);
+  }
+
+  updateGazeBack(gx, gy, safeDt);
+  updateGlobalPanelBack(gx, gy, safeDt);
 }
+
 
 // ══════════════════════════════════════════════════════
 // [see source for notes]
@@ -1369,6 +1415,7 @@ function setTheme(t){
   const btn=$('th'+(map[t]||'N'));if(btn) btn.classList.add('active');
 }
 function openHow(){
+  resetAllDwells();
   $('howPanel').style.display='flex';
   pushPage('howPanel');
 }
@@ -1397,10 +1444,10 @@ function initStartModeUI(){
   });
 }
 
-function openA11y(){ $('a11yPanel').style.display='flex'; pushPage('a11yPanel'); setTheme(currentTheme); setInputMode(inputMode); updateBlinkUI(); }
+function openA11y(){ resetAllDwells(); $('a11yPanel').style.display='flex'; pushPage('a11yPanel'); setTheme(currentTheme); setInputMode(inputMode); updateBlinkUI(); }
 function closeA11y(){ $('a11yPanel').style.display='none'; popPage(); }
 
-function openArch(){ $('archPanel').style.display='flex'; pushPage('archPanel'); }
+function openArch(){ resetAllDwells(); $('archPanel').style.display='flex'; pushPage('archPanel'); }
 function closeArch(){ $('archPanel').style.display='none'; popPage(); }
 
 // ══════════════════════════════════════════════════════
@@ -1486,6 +1533,7 @@ function qmDeleteMessage(idx){
 }
 
 function openQuickMsg(){
+  resetAllDwells();
   $('quickMsgPanel').style.display='flex';
   pushPage('quickMsgPanel');
   renderQmContacts();
@@ -1673,6 +1721,7 @@ function toggleWakeWord(){
 }
 
 function openDiag(){
+  resetAllDwells();
   $('diagPanel').style.display='flex';
   pushPage('diagPanel');
   renderDiag();
@@ -2583,7 +2632,7 @@ const EMOJIS=['💧','🆘','✅','❌','😣','🚽','🌡️','😴','❓','�
 let userPhrases=[],selEmoji='😊',phraseDwells=[];
 function loadPhrases(){ try{const s=localStorage.getItem('es_phrases');userPhrases=s?JSON.parse(s):[...DEF_PHRASES];}catch(e){userPhrases=[...DEF_PHRASES];} }
 function savePhrases(){ try{localStorage.setItem('es_phrases',JSON.stringify(userPhrases));}catch(e){} }
-function openPhraseBoard(){ loadPhrases();phraseBoard.style.display='flex';pushPage('phraseBoard');renderPhrases(); }
+function openPhraseBoard(){ resetAllDwells();loadPhrases();phraseBoard.style.display='flex';pushPage('phraseBoard');renderPhrases(); }
 function closePhraseBoard(){ phraseBoard.style.display='none';output.style.display='none';phraseDwells=[];popPage(); }
 function renderPhrases(){
   const g=$('pbGrid');g.innerHTML='';phraseDwells=[];
@@ -2626,7 +2675,7 @@ function updatePhraseDwells(gx,gy,dt){
 // ══════════════════════════════════════════════════════
 const IOT=[{i:'💡',n:'Light',s:false},{i:'📺',n:'TV',s:false},{i:'❄️',n:'AC',s:false},{i:'🚪',n:'Door',s:false},{i:'🔔',n:'Bell',s:false},{i:'🌡️',n:'Thermostat',s:false}];
 let iotDwells=[];
-function openIot(){$('iotPanel').style.display='flex';pushPage('iotPanel');renderIot();}
+function openIot(){resetAllDwells();$('iotPanel').style.display='flex';pushPage('iotPanel');renderIot();}
 function closeIot(){$('iotPanel').style.display='none';iotDwells=[];popPage();}
 function renderIot(){
   const g=$('iotGrid');g.innerHTML='';iotDwells=[];
@@ -2898,6 +2947,7 @@ let kbSuggDwells = [];
 let kbTouchRefs  = [];
 
 function openKeyboard(){
+  resetAllDwells();
   kbText=''; kbShift=false; kbLay=getAlphaLayout();
   $('kbPanel').style.display='flex';
   $('kbTextArea').dataset.ph=appLang==='tr'?'Yazmaya başlayın…':'Start typing…';
@@ -3732,6 +3782,7 @@ async function visionLoadCoco(){
 
 // ── Camera management
 async function openVision(){
+  resetAllDwells();
   if(!visionCheckSecurity()){ const vp=$('visionPanel'); if(vp) vp.style.display='flex'; pushPage('visionPanel'); return; }
   const vp=$('visionPanel'); if(vp) vp.style.display='flex';
   pushPage('visionPanel');
@@ -5172,7 +5223,23 @@ function initStart(){
       startCalibration();
     }
   };
-  $('useSavedBtn').onclick=()=>{if(loadCalibration()){speak(t('calibLoaded'));showMainMode();}};
+  $('useSavedBtn').onclick=async()=>{
+    if(!loadCalibration()) return;
+
+    // EyeSense FIX v2:
+    // Kayıtlı kalibrasyon seçildiğinde göz modu aktif olmalı ve kamera mutlaka başlatılmalı.
+    // Önceden sadece showMainMode() çağrıldığı için kamera kapalı kalabiliyordu.
+    setInputMode('eye');
+    speak(t('calibLoaded'));
+
+    if(!cameraReady){
+      await main();
+    }
+
+    if(cameraReady){
+      showMainMode();
+    }
+  };
 }
 
 // ══════════════════════════════════════════════════════
