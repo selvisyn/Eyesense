@@ -1198,6 +1198,7 @@ function setInputMode(m){
   const map={eye:'Eye',finger:'Finger',both:'Both',dwellonly:'Dwell'};
   const btn=$('mode'+map[m]); if(btn) btn.classList.add('active');
   if(m==='finger'||m==='both') enableTouchInput(); else disableTouchInput();
+  if(mainUI&&mainUI.style.display==='flex') dot.style.display=(m==='eye'||m==='both')?'block':'none';
 }
 let touchInputEnabled=false;
 function enableTouchInput(){
@@ -5100,7 +5101,9 @@ function backToStart(){
   speak(appLang==='tr' ? 'Başlangıç ekranı.' : 'Start screen.');
 }
 function showMainMode(){
-  hideAllScreens();dot.style.display='block';mainUI.style.display='flex';
+  hideAllScreens();
+  dot.style.display=(inputMode==='eye'||inputMode==='both')?'block':'none';
+  mainUI.style.display='flex';
   setTheme(currentTheme);statusBar.style.display='block';irisQ.style.display='block';dwellRing.style.display='block';
   mainDwells=[];
   updateGazeBackVisibility();
@@ -5138,7 +5141,12 @@ function setLocVal(v){ const el=document.getElementById('locValue'); if(el) el.t
 
 // ── PANIC BUTTON ──────────────────────────────────────
 let panicArmed=false, panicElapsed=0;
-function triggerPanic(){}
+function triggerPanic(){
+  const msg = appLang==='tr'
+    ? 'Yardıma ihtiyacım var, lütfen gel.'
+    : 'I need help, please come.';
+  qmSendMsg(msg, 0);
+}
 function updatePanicDwell(){}
 
 function initStart(){
