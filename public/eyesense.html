@@ -10,1348 +10,7 @@
 <meta name="theme-color" content="#060610">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{
-  --bg:#060610;--surface:rgba(255,255,255,0.055);--border:rgba(255,255,255,0.11);
-  --text:#f0f0ff;--muted:#7a7a9a;--accent:#e02020;--dwell:#ffe033;--font:14px;
-  --blue:#4488ff;--green:#22dd88;
-}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;
-  font-size:var(--font);overflow:hidden;height:100dvh;user-select:none;touch-action:none;
-  -webkit-font-smoothing:antialiased;}
-
-/* ── THEME ── */
-body.hc{--bg:#000;--surface:#1a1a1a;--border:#fff;--muted:#ccc;--accent:#ff0;--dwell:#0ff;}
-body.hc #dot{background:#ff0!important;box-shadow:0 0 0 4px rgba(255,255,0,0.4)!important;}
-body.hc .phrase-btn,body.hc .kb-key,body.hc .iot-card{background:#1a1a1a!important;border-color:#fff!important;}
-body.hc .gazing{border-color:#ff0!important;}
-body.hc .dwell-ov{background:#ff0!important;}
-body.lg{--font:19px;}
-body.lg .phrase-btn{min-height:100px;}
-body.lg .phrase-btn .pb-t{font-size:16px!important;}
-body.lg .kb-key{font-size:17px!important;height:52px!important;}
-body.lg #outputText{font-size:26px;}
-body.night{filter:brightness(0.70);}
-
-/* ── VIDEO ── */
-#video{position:fixed;bottom:12px;right:12px;width:130px;height:73px;
-  object-fit:cover;border-radius:10px;border:1px solid var(--border);
-  transform:scaleX(-1);z-index:5;opacity:0.55;}
-@media(max-width:500px){#video{width:85px;height:48px;bottom:8px;right:8px;}}
-
-/* ── GAZE DOT ── */
-#dot{position:fixed;width:18px;height:18px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#ffee88,#cc1111);
-  box-shadow:0 0 0 3px rgba(255,0,0,0.18),0 0 14px rgba(255,80,0,0.45);
-  transform:translate(-50%,-50%);pointer-events:none;z-index:60;display:none;}
-#dwellRing{position:fixed;pointer-events:none;z-index:59;display:none;transform:translate(-50%,-50%);}
-#dwellRing svg{overflow:visible;}
-.dr-track{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:3;}
-.dr-bar{fill:none;stroke:var(--dwell);stroke-width:3;stroke-linecap:round;}
-
-/* ── BLINK FLASH ── */
-#blinkFlash{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:900;
-  background:rgba(255,224,51,0.14);border:1px solid rgba(255,224,51,0.45);
-  border-radius:24px;padding:6px 18px;font-size:12px;color:#ffe033;
-  display:none;pointer-events:none;font-family:'Syne',sans-serif;letter-spacing:.04em;}
-
-/* ── SCREENS ── */
-.screen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:18px;padding:28px;background:var(--bg);}
-.screen.hidden{display:none!important;}
-
-/* ══════════════════════════════════════════
-   ── START SCREEN — YARATICI TASARIM ──
-   ══════════════════════════════════════════ */
-#startScreen{
-  background:var(--bg);
-  overflow:hidden;
-}
-/* Deep background effect */
-#startScreen::before{
-  content:'';position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 60% at 20% 30%, rgba(68,136,255,0.09) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 80% 70%, rgba(224,32,32,0.07) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,224,51,0.04) 0%, transparent 60%);
-  pointer-events:none;
-}
-/* Grid lines */
-#startScreen::after{
-  content:'';position:absolute;inset:0;z-index:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size:44px 44px;
-  pointer-events:none;
-  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
-}
-#startInner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:420px;}
-
-/* EYE amblem */
-.start-eye-wrap{position:relative;width:72px;height:72px;margin-bottom:2px;}
-.start-eye-outer{width:72px;height:72px;border-radius:50%;background:rgba(68,136,255,0.08);
-  border:1px solid rgba(68,136,255,0.25);display:flex;align-items:center;justify-content:center;
-  animation:eyePulse 3s ease-in-out infinite;}
-.start-eye-inner{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(68,136,255,0.3),rgba(224,32,32,0.2));
-  border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;}
-@keyframes eyePulse{0%,100%{box-shadow:0 0 0 0 rgba(68,136,255,0.2),0 0 20px rgba(68,136,255,0.1);}50%{box-shadow:0 0 0 12px rgba(68,136,255,0.05),0 0 40px rgba(68,136,255,0.2);}}
-
-/* LOGO typography */
-.start-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:38px;letter-spacing:-.02em;line-height:1;text-align:center;}
-.start-logo .eye-part{color:#4488ff;}
-.start-logo .sense-part{color:var(--text);}
-.start-tagline{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;text-align:center;font-weight:300;}
-
-/* HERO TEXT */
-.start-hero{text-align:center;max-width:360px;}
-.start-hero h2{font-family:'Syne',sans-serif;font-weight:700;font-size:21px;line-height:1.35;color:var(--text);margin-bottom:8px;}
-.start-hero h2 em{color:#4488ff;font-style:normal;}
-.start-hero p{font-size:13px;color:var(--muted);line-height:1.7;}
-
-/* PRIVACY BADGE */
-.privacy-badge{
-  background:rgba(34,221,136,0.06);
-  border:1px solid rgba(34,221,136,0.18);
-  border-radius:14px;padding:10px 16px;font-size:12px;color:#22cc77;
-  line-height:1.8;text-align:center;width:100%;
-}
-.privacy-badge b{color:#33ee99;}
-
-/* BUTTONS */
-.start-btn-group{display:flex;flex-direction:column;gap:9px;width:100%;}
-.btn-start-main{
-  padding:14px 24px;
-  background:linear-gradient(135deg,#1a3a7a,#2244aa);
-  border:1px solid rgba(68,136,255,0.4);
-  border-radius:14px;color:#fff;font-size:15px;font-family:'Syne',sans-serif;
-  font-weight:700;cursor:pointer;letter-spacing:.04em;
-  transition:all .2s;position:relative;overflow:hidden;
-}
-.btn-start-main::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.06),transparent);pointer-events:none;}
-.btn-start-main:hover{border-color:rgba(68,136,255,0.8);box-shadow:0 0 24px rgba(68,136,255,0.25);}
-.btn-start-saved{padding:12px 20px;background:rgba(255,255,255,0.04);border:1px solid var(--border);
-  border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;}
-.btn-start-saved:hover{background:rgba(255,255,255,0.09);color:var(--text);border-color:rgba(255,255,255,0.25);}
-.saved-info{font-size:12px;color:#7a7a9a;background:rgba(34,221,136,0.05);border:1px solid rgba(34,221,136,0.14);
-  border-radius:8px;padding:7px 14px;text-align:center;}
-.saved-info b{color:#22dd88;}
-
-/* V badge */
-.start-v{position:absolute;bottom:18px;right:18px;font-size:11px;color:#333;letter-spacing:.08em;font-family:'Syne',sans-serif;}
-
-/* ── CALIB ── */
-#calibScreen{background:#040408;}
-#calibDot{position:fixed;border-radius:50%;transform:translate(-50%,-50%);z-index:350;display:none;pointer-events:none;}
-#calibRing{position:fixed;transform:translate(-50%,-50%);z-index:351;display:none;pointer-events:none;}
-#calibMsg{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:360;
-  background:rgba(0,0,0,0.85);border:1px solid var(--border);border-radius:16px;
-  color:#ccc;font-size:14px;padding:9px 20px;display:none;white-space:nowrap;}
-#calibCounter{position:fixed;top:20px;left:50%;transform:translateX(-50%);
-  z-index:360;font-size:13px;color:#555;display:none;}
-#qualityBar{position:fixed;top:48px;left:50%;transform:translateX(-50%);
-  z-index:360;display:none;align-items:center;gap:8px;font-size:12px;color:#666;}
-#qualityBar .bw{width:110px;height:5px;background:#222;border-radius:3px;overflow:hidden;}
-#qualityBar .bf{height:100%;width:0%;border-radius:3px;transition:width .1s,background .1s;}
-
-
-/* ── IRIS SCROLL ── */
-#scrollZoneTop,#scrollZoneBottom{
-  position:fixed;left:0;right:0;pointer-events:none;
-  z-index:9990;
-  display:none;align-items:center;justify-content:center;
-  opacity:0;transition:opacity .15s;
-  height:clamp(52px,13vh,88px);
-}
-#scrollZoneTop{
-  top:0;
-  background:linear-gradient(to bottom,rgba(68,136,255,0.22) 0%,rgba(68,136,255,0.06) 65%,transparent 100%);
-  color:rgba(68,136,255,0.95);
-}
-#scrollZoneBottom{
-  bottom:0;
-  background:linear-gradient(to top,rgba(255,224,51,0.22) 0%,rgba(255,224,51,0.06) 65%,transparent 100%);
-  color:rgba(255,224,51,0.95);
-}
-#scrollZoneTop.visible,#scrollZoneBottom.visible{ display:flex; opacity:1; }
-#scrollZoneTop.active{
-  background:linear-gradient(to bottom,rgba(68,136,255,0.48) 0%,rgba(68,136,255,0.14) 55%,transparent 100%);
-}
-#scrollZoneBottom.active{
-  background:linear-gradient(to top,rgba(255,224,51,0.48) 0%,rgba(255,224,51,0.14) 55%,transparent 100%);
-}
-#scrollZoneTop .sz-arrow{ font-size:20px;animation:szUp .55s ease-in-out infinite; }
-#scrollZoneBottom .sz-arrow{ font-size:20px;animation:szDown .55s ease-in-out infinite; }
-@keyframes szUp  {0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-@keyframes szDown{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
-@media(max-width:600px){
-  #scrollZoneTop,#scrollZoneBottom{ height:clamp(60px,15vh,96px); }
-}
-
-/* ── HOW TO USE PANEL ── */
-#howPanel{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;
-  flex-direction:column;align-items:center;overflow-y:auto;padding:24px 20px;gap:0;}
-#howPanel .how-hdr{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px;}
-#howPanel .how-hdr h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
-.how-step{width:100%;max-width:520px;display:flex;gap:14px;align-items:flex-start;
-  padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
-.how-step:last-child{border:none;}
-.how-num{flex-shrink:0;width:32px;height:32px;border-radius:50%;
-  background:rgba(68,136,255,0.15);border:1px solid rgba(68,136,255,0.3);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#4488ff;}
-.how-body{flex:1;}
-.how-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px;}
-.how-desc{font-size:12px;color:var(--muted);line-height:1.65;}
-.how-tag{display:inline-block;background:rgba(255,224,51,0.1);border:1px solid rgba(255,224,51,0.3);
-  border-radius:8px;padding:2px 7px;font-size:10px;color:#ffe033;margin-top:5px;font-family:'Syne',sans-serif;}
-.how-tag.blue{background:rgba(68,136,255,0.1);border-color:rgba(68,136,255,0.3);color:#88aaff;}
-.how-tag.green{background:rgba(34,221,136,0.1);border-color:rgba(34,221,136,0.3);color:#22dd88;}
-
-/* ── START SCREEN MODE SELECTOR ── */
-.start-mode-row{display:flex;gap:8px;width:100%;}
-.start-mode-btn{flex:1;padding:11px 8px;background:var(--surface);border:2px solid var(--border);
-  border-radius:12px;color:var(--muted);font-size:12px;cursor:pointer;
-  transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Syne',sans-serif;}
-.start-mode-btn .smb-icon{font-size:20px;}
-.start-mode-btn .smb-label{font-size:11px;font-weight:600;}
-.start-mode-btn.active{border-color:rgba(68,136,255,0.6);background:rgba(68,136,255,0.1);color:var(--text);}
-.start-mode-btn:hover{border-color:rgba(255,255,255,0.25);color:var(--text);}
-@media(max-width:600px){
-  .how-step{ gap:10px; padding:11px 0; }
-  .how-num{ width:28px; height:28px; font-size:11px; }
-  .how-title{ font-size:12px; }
-  .how-desc{ font-size:11px; }
-  #howPanel{ padding:16px 12px; }
-  #howPanel .how-hdr h2{ font-size:16px; }
-  .start-mode-btn{ padding:9px 5px; }
-  .start-mode-btn .smb-icon{ font-size:18px; }
-  .start-mode-btn .smb-label{ font-size:10px; }
-}
-
-/* ── PANEL GAZE DOT PASSTHROUGH ── */
-/* When a full-screen panel is open, the gaze dot floats above it */
-#dot{ z-index:9999; }
-#dwellRing{ z-index:9998; }
-
-#blinkHint{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:70;
-  background:rgba(68,136,255,0.12);border:1px solid rgba(68,136,255,0.35);
-  border-radius:16px;padding:5px 14px;font-size:11px;color:#88aaff;
-  display:none;pointer-events:none;white-space:nowrap;}
-/* ── ONLINE LEARNING ── */
-#olIndicator{position:fixed;top:36px;right:12px;z-index:70;
-  background:rgba(34,221,136,0.10);border:1px solid rgba(34,221,136,0.25);
-  border-radius:10px;padding:3px 9px;font-size:10px;color:#22dd88;
-  display:none;pointer-events:none;}
-/* ── CALIB QUALITY FEEDBACK ── */
-#calibErrMsg{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:360;
-  background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.4);
-  border-radius:14px;padding:6px 16px;font-size:12px;color:#ff8888;
-  display:none;pointer-events:none;white-space:nowrap;}
-
-#lightWarn,#headWarn{position:fixed;left:50%;transform:translateX(-50%);z-index:400;
-  padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;display:none;}
-#lightWarn{top:14px;background:rgba(255,180,0,.12);border:1px solid #fa0;color:#fa0;}
-#headWarn{top:44px;background:rgba(255,60,60,.12);border:1px solid #f44;color:#f44;}
-
-/* ── EVAL ── */
-#evalScreen{background:#040408;}
-#evalDot{position:fixed;width:26px;height:26px;border-radius:50%;background:#fff;
-  box-shadow:0 0 0 10px rgba(255,255,255,0.1);transform:translate(-50%,-50%);z-index:350;display:none;}
-#evalDot.active{background:#ff3;box-shadow:0 0 0 12px rgba(255,220,0,.15),0 0 28px rgba(255,200,0,.35);}
-#evalRing{position:fixed;transform:translate(-50%,-50%);z-index:351;display:none;pointer-events:none;}
-#evalMsg{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:360;
-  background:rgba(0,0,0,0.85);border:1px solid var(--border);border-radius:16px;
-  color:#ccc;font-size:14px;padding:9px 20px;display:none;}
-#evalCounter{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:360;font-size:13px;color:#555;display:none;}
-
-/* ── REPORT ── */
-#reportScreen{gap:14px;}
-.rep-title{font-size:19px;font-weight:700;font-family:'Syne',sans-serif;}
-.rep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:500px;}
-.mc{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 10px;text-align:center;}
-.mv{font-size:24px;font-weight:700;color:#ffe033;margin-bottom:3px;}
-.ml{font-size:10px;color:#555;letter-spacing:.04em;}
-.ms{font-size:10px;color:#444;margin-top:2px;}
-.err-list{width:100%;max-width:500px;background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:11px;padding:10px 14px;font-size:12px;color:#666;max-height:140px;overflow-y:auto;}
-.er{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.er:last-child{border:none;}
-.ok{color:#4d4;}.mid{color:#fa0;}.bad{color:#f44;}
-.rep-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-
-/* ═══════════════════════════════════════════════════
-   MAIN UI — MODERN REDESIGN
-   ═══════════════════════════════════════════════════ */
-#mainUI{
-  position:fixed;inset:0;z-index:100;display:none;
-  flex-direction:column;align-items:stretch;
-  background:var(--bg);overflow:hidden;
-}
-/* Deep atmospheric background */
-#mainUI::before{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 65% 55% at 8% 18%, rgba(68,136,255,0.12) 0%,transparent 55%),
-    radial-gradient(ellipse 50% 60% at 92% 82%, rgba(168,85,247,0.08) 0%,transparent 50%),
-    radial-gradient(ellipse 40% 45% at 50% 48%, rgba(34,221,136,0.04) 0%,transparent 55%),
-    radial-gradient(ellipse 35% 30% at 85% 12%, rgba(224,32,32,0.06) 0%,transparent 50%);
-  animation:bgDrift 12s ease-in-out infinite;
-}
-@keyframes bgDrift{0%,100%{opacity:1}50%{opacity:.85;transform:scale(1.04);}}
-/* Dot grid overlay */
-#mainUI::after{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:radial-gradient(circle,rgba(255,255,255,0.055) 1px,transparent 1px);
-  background-size:30px 30px;
-  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
-}
-
-/* ── TOP HEADER BAR ── */
-#mainTopBar{
-  position:relative;z-index:2;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:max(16px,env(safe-area-inset-top)) 20px 0;
-  flex-shrink:0;
-}
-#mainLogoWrap{display:flex;align-items:center;gap:10px;}
-#mainLogoOrb{
-  width:40px;height:40px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,rgba(68,136,255,0.35),rgba(68,136,255,0.05));
-  border:1px solid rgba(68,136,255,0.3);
-  display:flex;align-items:center;justify-content:center;font-size:17px;
-  box-shadow:0 0 18px rgba(68,136,255,0.2);
-  animation:eyePulse 3.5s ease-in-out infinite;
-}
-#mainLogoText{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;}
-#mainLogoText .eye-part{color:#4488ff;text-shadow:0 0 20px rgba(68,136,255,0.55);}
-#mainLogoText .sense-part{color:var(--text);}
-/* Lang picker in top bar */
-#mainLangBar{display:flex;gap:6px;}
-.lang-btn{
-  padding:5px 13px;border-radius:20px;font-size:11px;
-  font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.04em;
-  border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);
-  color:var(--muted);cursor:pointer;transition:all .18s;
-}
-.lang-btn.active{
-  background:rgba(68,136,255,0.2);border-color:rgba(68,136,255,0.55);
-  color:#88aaff;box-shadow:0 0 10px rgba(68,136,255,0.18);
-}
-.lang-switcher{display:flex;gap:8px;}
-
-/* ── LOCATION + PANIC ROW ── */
-#infoRow{
-  position:relative;z-index:2;
-  display:flex;align-items:stretch;gap:10px;
-  padding:10px 20px 0;flex-shrink:0;
-}
-#locationWidget{
-  flex:1;display:flex;align-items:center;gap:12px;
-  background:rgba(255,255,255,0.034);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:16px;padding:10px 15px;overflow:hidden;
-  transition:border-color .2s;min-height:54px;
-}
-#locationWidget .lw-pin{font-size:20px;animation:pinBounce 3s ease-in-out infinite;}
-@keyframes pinBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
-#locationWidget .lw-body{flex:1;min-width:0;}
-#locationWidget .lw-label{
-  font-size:9px;color:var(--muted);letter-spacing:.12em;
-  text-transform:uppercase;font-family:'Syne',sans-serif;font-weight:700;
-}
-#locationWidget .lw-value{
-  font-size:12px;color:rgba(255,255,255,0.82);margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-/* PANIC BTN */
-#panicBtn{
-  flex-shrink:0;width:72px;
-  background:linear-gradient(160deg,rgba(220,30,30,0.22),rgba(180,0,0,0.08));
-  border:1.5px solid rgba(220,38,38,0.42);border-radius:16px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;position:relative;overflow:hidden;
-  transition:border-color .15s,background .15s;
-  animation:sosGlow 3s ease-in-out infinite;
-}
-@keyframes sosGlow{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}50%{box-shadow:0 0 0 5px rgba(220,38,38,0.1),0 0 18px rgba(220,38,38,0.15);}}
-#panicBtn .pa-icon{font-size:22px;line-height:1;}
-#panicBtn .pa-label{font-size:9px;font-family:'Syne',sans-serif;font-weight:800;color:#ff6666;letter-spacing:.08em;}
-#panicBtn.gazing{border-color:rgba(255,40,40,0.9);background:rgba(220,38,38,0.32);box-shadow:0 0 24px rgba(220,38,38,0.4);}
-#panicBtn .pa-dwell{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#ff4444,rgba(255,68,68,0.5));width:0%;border-radius:0 0 16px 16px;}
-
-/* ── SCROLL CONTENT AREA ── */
-#mainContent{
-  position:relative;z-index:2;
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  display:flex;flex-direction:column;align-items:center;
-  padding:12px 20px max(90px,calc(80px + env(safe-area-inset-bottom)));
-  gap:12px;scrollbar-width:none;
-}
-#mainContent::-webkit-scrollbar{display:none;}
-
-/* ── SECTION LABEL ROW ── */
-#mainSectionRow{
-  width:100%;max-width:620px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-#mainSectionLabel{
-  font-size:10px;color:rgba(255,255,255,0.28);
-  letter-spacing:.14em;text-transform:uppercase;
-  font-family:'Syne',sans-serif;font-weight:700;
-}
-#mainSectionHint{
-  display:flex;align-items:center;gap:5px;
-  font-size:10px;color:rgba(255,224,51,0.45);
-}
-#mainSectionHint::before{
-  content:'';width:5px;height:5px;border-radius:50%;
-  background:rgba(255,224,51,0.55);
-  animation:hintBlink 2s ease-in-out infinite;
-}
-@keyframes hintBlink{0%,100%{opacity:.3;}50%{opacity:1;}}
-
-/* ── GRID — 3×2 ── */
-#mainMenuGrid{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:12px;width:100%;max-width:620px;
-}
-/* Bigger cards for 6-item grid */
-#mainMenuGrid .btn-sm{
-  min-height:140px;aspect-ratio:auto;
-  border-radius:24px;
-}
-#mainMenuGrid .btn-sm .bsm-icon{font-size:36px;}
-#mainMenuGrid .btn-sm .bsm-label{font-size:12px;}
-@media(max-width:500px){
-  #mainMenuGrid{gap:9px;}
-  #mainMenuGrid .btn-sm{min-height:110px;border-radius:18px;}
-  #mainMenuGrid .btn-sm .bsm-icon{font-size:28px;}
-  #mainMenuGrid .btn-sm .bsm-label{font-size:10px;}
-}
-@media(max-width:380px){
-  #mainMenuGrid .btn-sm{min-height:90px;}
-  #mainMenuGrid .btn-sm .bsm-icon{font-size:24px;}
-}
-/* BUTTON CARDS */
-.btn-sm{
-  padding:0;border-radius:22px;cursor:pointer;
-  position:relative;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;aspect-ratio:1/1;min-height:112px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.07);
-  transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;
-}
-/* Gloss streak */
-.btn-sm::before{
-  content:'';position:absolute;
-  top:-40%;left:-25%;width:55%;height:180%;
-  background:linear-gradient(110deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.01) 55%,transparent 100%);
-  pointer-events:none;transition:transform .35s;
-}
-.btn-sm:hover::before,.btn-sm.gazing::before{transform:translateX(20%);}
-.btn-sm .bsm-icon{font-size:30px;line-height:1;position:relative;z-index:1;transition:transform .18s;}
-.btn-sm.gazing .bsm-icon{transform:scale(1.18);}
-.btn-sm .bsm-label{
-  font-size:11px;font-family:'Syne',sans-serif;font-weight:700;
-  color:rgba(255,255,255,0.42);letter-spacing:.02em;
-  text-align:center;padding:0 10px;line-height:1.35;
-  position:relative;z-index:1;transition:color .18s;
-}
-.btn-sm.gazing{transform:scale(1.05);}
-.btn-sm.gazing .bsm-label{color:rgba(255,255,255,0.92);}
-.btn-sm:active{transform:scale(0.95);}
-.btn-sm .btn-dwell{position:absolute;bottom:0;left:0;height:3px;width:0%;border-radius:0 0 22px 22px;}
-
-/* Per-button tints */
-#phraseBtn{background:linear-gradient(150deg,rgba(68,136,255,0.1),rgba(68,136,255,0.02));border-color:rgba(68,136,255,0.18);}
-#phraseBtn.gazing{background:rgba(68,136,255,0.18)!important;border-color:rgba(68,136,255,0.7)!important;box-shadow:0 0 22px rgba(68,136,255,0.22);}
-#phraseBtn .btn-dwell{background:linear-gradient(90deg,#4488ff,rgba(68,136,255,0.3));}
-
-#keyboardBtn{background:linear-gradient(150deg,rgba(34,221,136,0.09),rgba(34,221,136,0.02));border-color:rgba(34,221,136,0.16);}
-#keyboardBtn.gazing{background:rgba(34,221,136,0.16)!important;border-color:rgba(34,221,136,0.65)!important;box-shadow:0 0 22px rgba(34,221,136,0.2);}
-#keyboardBtn .btn-dwell{background:linear-gradient(90deg,#22dd88,rgba(34,221,136,0.3));}
-
-#visionBtn{background:linear-gradient(150deg,rgba(168,85,247,0.1),rgba(168,85,247,0.02));border-color:rgba(168,85,247,0.16);}
-#visionBtn.gazing{background:rgba(168,85,247,0.18)!important;border-color:rgba(168,85,247,0.65)!important;box-shadow:0 0 22px rgba(168,85,247,0.22);}
-#visionBtn .btn-dwell{background:linear-gradient(90deg,#a855f7,rgba(168,85,247,0.3));}
-
-#evalBtn{background:linear-gradient(150deg,rgba(250,204,21,0.09),rgba(250,204,21,0.01));border-color:rgba(250,204,21,0.14);}
-#evalBtn.gazing{background:rgba(250,204,21,0.15)!important;border-color:rgba(250,204,21,0.6)!important;box-shadow:0 0 22px rgba(250,204,21,0.18);}
-#evalBtn .btn-dwell{background:linear-gradient(90deg,#facc15,rgba(250,204,21,0.3));}
-
-#recalibBtn{background:linear-gradient(150deg,rgba(251,146,60,0.09),rgba(251,146,60,0.01));border-color:rgba(251,146,60,0.14);}
-#recalibBtn.gazing{background:rgba(251,146,60,0.16)!important;border-color:rgba(251,146,60,0.6)!important;box-shadow:0 0 22px rgba(251,146,60,0.18);}
-#recalibBtn .btn-dwell{background:linear-gradient(90deg,#fb923c,rgba(251,146,60,0.3));}
-
-#ocrBtn{background:linear-gradient(150deg,rgba(20,184,166,0.1),rgba(20,184,166,0.02));border-color:rgba(20,184,166,0.18);}
-#ocrBtn.gazing{background:rgba(20,184,166,0.18)!important;border-color:rgba(20,184,166,0.65)!important;box-shadow:0 0 22px rgba(20,184,166,0.22);}
-#ocrBtn .btn-dwell{background:linear-gradient(90deg,#14b8a6,rgba(20,184,166,0.3));}
-
-#a11yBtn{background:linear-gradient(150deg,rgba(56,189,248,0.09),rgba(56,189,248,0.01));border-color:rgba(56,189,248,0.14);}
-#a11yBtn.gazing{background:rgba(56,189,248,0.16)!important;border-color:rgba(56,189,248,0.6)!important;box-shadow:0 0 22px rgba(56,189,248,0.18);}
-#a11yBtn .btn-dwell{background:linear-gradient(90deg,#38bdf8,rgba(56,189,248,0.3));}
-
-#diagBtn{background:linear-gradient(150deg,rgba(248,113,113,0.08),rgba(248,113,113,0.01));border-color:rgba(248,113,113,0.13);}
-#diagBtn.gazing{background:rgba(248,113,113,0.15)!important;border-color:rgba(248,113,113,0.6)!important;box-shadow:0 0 22px rgba(248,113,113,0.18);}
-#diagBtn .btn-dwell{background:linear-gradient(90deg,#f87171,rgba(248,113,113,0.3));}
-
-#howMainBtn{background:linear-gradient(150deg,rgba(167,243,208,0.08),rgba(167,243,208,0.01));border-color:rgba(167,243,208,0.13);}
-#howMainBtn.gazing{background:rgba(167,243,208,0.14)!important;border-color:rgba(167,243,208,0.55)!important;box-shadow:0 0 22px rgba(167,243,208,0.15);}
-#howMainBtn .btn-dwell{background:linear-gradient(90deg,#a7f3d0,rgba(167,243,208,0.3));}
-
-#quickMsgBtn{background:linear-gradient(150deg,rgba(236,72,153,0.1),rgba(236,72,153,0.02));border-color:rgba(236,72,153,0.18);}
-#quickMsgBtn.gazing{background:rgba(236,72,153,0.18)!important;border-color:rgba(236,72,153,0.65)!important;box-shadow:0 0 22px rgba(236,72,153,0.22);}
-#quickMsgBtn .btn-dwell{background:linear-gradient(90deg,#ec4899,rgba(236,72,153,0.3));}
-
-/* ── SLIDERS ── */
-#mainMenuSliders{
-  display:flex;gap:10px;width:100%;max-width:620px;
-}
-#mainMenuSliders .panel{flex:1;display:flex;flex-direction:row;align-items:center;gap:10px;}
-.panel{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;padding:9px 13px;font-size:12px;color:#aaa;
-  display:flex;flex-direction:column;gap:4px;
-}
-.panel b{color:#fff;}
-input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
-
-/* ── BACK BTN (bottom center) — replaces top-left gazeBack ── */
-#gazeBackBtn{display:none!important;}
-.panel-back-btn{
-  position:fixed;bottom:max(22px,env(safe-area-inset-bottom));
-  left:50%;transform:translateX(-50%);
-  z-index:9000;
-  background:rgba(6,6,16,0.9);
-  border:2px solid rgba(255,224,51,0.32);
-  border-radius:22px;padding:14px 44px;
-  font-size:16px;font-family:'Syne',sans-serif;font-weight:700;
-  color:#ffe033;cursor:pointer;display:none;
-  flex-direction:column;align-items:center;gap:4px;
-  overflow:hidden;min-width:190px;text-align:center;
-  box-shadow:0 4px 36px rgba(0,0,0,0.55);
-  transition:border-color .15s,background .15s;
-  backdrop-filter:blur(12px);
-}
-.panel-back-btn.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.1);}
-.panel-back-btn .pb-dwell-bar{
-  position:absolute;bottom:0;left:0;height:4px;
-  background:linear-gradient(90deg,var(--dwell),rgba(255,224,51,0.4));
-  width:0%;border-radius:0 0 22px 22px;
-}
-.panel-back-btn .pb-hint{font-size:10px;color:rgba(255,224,51,0.5);font-weight:400;letter-spacing:.04em;}
-
-@media(max-width:500px){
-  #mainTopBar{padding:max(12px,env(safe-area-inset-top)) 14px 0;}
-  #mainLogoText{font-size:19px;}
-  #mainLogoOrb{width:34px;height:34px;font-size:14px;}
-  #infoRow{padding:8px 14px 0;gap:8px;}
-  #locationWidget{min-height:48px;padding:8px 12px;}
-  #panicBtn{width:64px;}
-  #mainContent{padding:10px 14px max(80px,calc(70px + env(safe-area-inset-bottom)));gap:9px;}
-  #mainMenuGrid{gap:8px;}
-  .btn-sm{min-height:95px;border-radius:18px;}
-  .btn-sm .bsm-icon{font-size:26px;}
-  .btn-sm .bsm-label{font-size:10px;}
-  #mainMenuSliders{flex-direction:column;gap:6px;}
-  .panel-back-btn{padding:12px 32px;font-size:14px;bottom:max(14px,env(safe-area-inset-bottom));}
-}
-
-/* ═══════════════════════════════════════════════════
-   VISION PANEL — AI Object Detection
-   ═══════════════════════════════════════════════════ */
-#visionPanel{
-  position:fixed;inset:0;background:var(--bg);z-index:500;display:none;
-  flex-direction:column;overflow:hidden;
-  padding-bottom:max(80px,calc(70px + env(safe-area-inset-bottom)));
-}
-.vph-left{display:flex;align-items:center;gap:12px;}
-.vph-icon{font-size:24px;}
-#visionPanel .vp-hdr{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:max(16px,env(safe-area-inset-top)) 18px 12px;
-  border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;
-}
-#visionPanel .vp-hdr h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin:0;}
-.vph-sub{font-size:10px;color:var(--muted);letter-spacing:.06em;margin-top:2px;}
-/* Security banner */
-.vsec-banner{
-  flex-shrink:0;padding:10px 16px;font-size:12px;line-height:1.5;text-align:center;
-  background:rgba(220,38,38,0.1);border-bottom:1px solid rgba(220,38,38,0.25);color:#ff9999;
-}
-/* Camera preview */
-#visionPreviewWrap{
-  position:relative;width:100%;flex-shrink:0;
-  background:#000;overflow:hidden;
-  /* Responsive height: fills remaining space */
-  flex:1;min-height:0;max-height:55vh;
-}
-#visionPreviewVideo{width:100%;height:100%;object-fit:cover;display:block;}
-#visionPreviewCanvas{display:none;}
-/* COCO-SSD detection overlay */
-#visionDetectCanvas{
-  position:absolute;inset:0;width:100%;height:100%;
-  pointer-events:none;z-index:2;
-}
-#visionSnapOverlay{
-  position:absolute;inset:0;background:rgba(255,255,255,0.8);
-  opacity:0;pointer-events:none;transition:opacity .12s;z-index:3;
-}
-#visionSnapOverlay.flash{opacity:1;}
-/* Camera controls overlay */
-#visionCamControls{
-  position:absolute;top:10px;right:10px;z-index:4;
-  display:flex;flex-direction:column;gap:6px;align-items:flex-end;
-}
-.vcam-btn{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(6,6,16,0.75);border:1px solid rgba(255,255,255,0.15);
-  border-radius:10px;padding:6px 12px;font-size:11px;color:#aaa;
-  cursor:pointer;backdrop-filter:blur(4px);
-}
-.vfps{font-size:9px;color:rgba(255,224,51,0.5);font-family:monospace;padding:2px 6px;
-  background:rgba(0,0,0,0.5);border-radius:4px;}
-/* Gaze zones (hit areas for detected objects) */
-#visionGazeZones{position:absolute;inset:0;z-index:5;pointer-events:none;}
-.vgz{
-  position:absolute;border:2px solid rgba(255,224,51,0);border-radius:8px;
-  transition:border-color .15s;cursor:pointer;
-}
-.vgz.vgz-dwelling{border-color:rgba(255,224,51,0.7);background:rgba(255,224,51,0.06);}
-.vgz-label{
-  position:absolute;bottom:4px;left:4px;right:4px;
-  background:rgba(6,6,16,0.8);border-radius:4px;padding:2px 5px;
-  font-size:10px;color:#ffe033;font-family:'Syne',sans-serif;font-weight:700;
-  text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.vgz .vgz-dwell{
-  position:absolute;bottom:0;left:0;height:3px;background:var(--dwell);
-  width:0%;border-radius:0 0 8px 8px;
-}
-/* Auto-scan ring */
-#visionAutoRing{
-  position:absolute;bottom:12px;right:12px;z-index:4;
-  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
-}
-#visionAutoRing svg{position:absolute;inset:0;width:44px;height:44px;}
-#visionAutoRing #visionAutoLabel{
-  font-size:9px;color:#ffe033;font-family:'Syne',sans-serif;font-weight:700;
-  position:relative;z-index:1;
-}
-/* Status */
-#visionStatus{
-  flex-shrink:0;padding:8px 16px;font-size:12px;text-align:center;
-  background:rgba(68,136,255,0.06);border-bottom:1px solid rgba(68,136,255,0.12);color:#88aaff;
-  line-height:1.5;min-height:36px;display:flex;align-items:center;justify-content:center;
-}
-#visionStatus.analyzing{background:rgba(255,224,51,0.05);border-color:rgba(255,224,51,0.18);color:#ffe033;animation:vpPulse 1.1s ease-in-out infinite;}
-#visionStatus.done{background:rgba(34,221,136,0.05);border-color:rgba(34,221,136,0.18);color:#22dd88;animation:none;}
-#visionStatus.error{background:rgba(220,38,38,0.05);border-color:rgba(220,38,38,0.18);color:#ff9999;animation:none;}
-@keyframes vpPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
-/* Object pills strip */
-#visionObjectStrip{
-  flex-shrink:0;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.06);
-}
-.vos-label{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;font-family:'Syne',sans-serif;}
-#visionObjectPills{display:flex;flex-wrap:wrap;gap:4px;}
-.vop{
-  padding:3px 10px;border-radius:12px;font-size:11px;
-  background:rgba(68,136,255,0.1);border:1px solid rgba(68,136,255,0.22);
-  color:rgba(255,255,255,0.7);font-family:'Syne',sans-serif;font-weight:600;
-  cursor:pointer;transition:border-color .12s,background .12s;
-}
-.vop:hover,.vop.active{background:rgba(68,136,255,0.22);border-color:rgba(68,136,255,0.6);color:#fff;}
-/* Result */
-#visionResult{
-  flex-shrink:0;padding:10px 16px;
-  background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
-  font-size:14px;color:var(--text);line-height:1.75;
-}
-.vr-label{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-family:'Syne',sans-serif;}
-/* Action buttons */
-#visionActions{
-  flex-shrink:0;display:flex;gap:8px;padding:10px 14px;
-  background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.05);
-}
-#visionScanBtn{
-  flex:2;padding:12px;
-  background:linear-gradient(135deg,rgba(68,136,255,0.2),rgba(68,136,255,0.08));
-  border:2px solid rgba(68,136,255,0.4);border-radius:14px;
-  color:#fff;font-size:15px;font-family:'Syne',sans-serif;font-weight:700;
-  cursor:pointer;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:border-color .15s,background .15s;
-}
-#visionScanBtn.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.12);}
-#visionScanBtn:disabled{opacity:.4;cursor:default;}
-#visionScanBtn .vs-dwell{position:absolute;bottom:0;left:0;height:4px;background:var(--dwell);width:0%;border-radius:0 0 14px 14px;}
-.vaction-sec{
-  flex:1;padding:10px;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);
-  border-radius:14px;color:rgba(255,255,255,0.6);font-size:12px;
-  font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  transition:background .12s,border-color .12s;
-}
-.vaction-sec:hover,.vaction-sec.active{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#fff;}
-#visionAutoToggle.auto-on{background:rgba(34,221,136,0.1);border-color:rgba(34,221,136,0.3);color:#22dd88;}
-@media(max-width:500px){
-  #visionPanel .vp-hdr h2{font-size:15px;}
-  #visionPreviewWrap{max-height:45vh;}
-  #visionResult{font-size:13px;}
-  #visionScanBtn{font-size:13px;padding:10px;}
-}
-
-/* ══ YENİ VİZYON PANELİ — Görme Engelli Optimize ══ */
-#vpTopBar{display:flex;align-items:center;gap:12px;padding:10px 14px;flex-shrink:0;background:rgba(0,0,0,0.6);border-bottom:1px solid var(--border);}
-#vpTitle{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);flex:1;text-align:center;}
-.vp-close-big{position:relative;overflow:hidden;padding:10px 18px;background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);border-radius:12px;color:#ff8080;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
-.vp-close-big.gazing{background:rgba(255,60,60,0.25)!important;border-color:rgba(255,60,60,0.7)!important;}
-.vp-close-dwell{position:absolute;bottom:0;left:0;height:3px;background:#ff4444;width:0%;border-radius:0 0 12px 12px;}
-
-/* İki büyük buton */
-#vpBigButtons{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px;flex-shrink:0;}
-.vp-big-btn{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;padding:18px 10px;border-radius:18px;border:2px solid rgba(68,136,255,0.25);
-  background:linear-gradient(160deg,rgba(68,136,255,0.1),rgba(68,136,255,0.03));
-  cursor:pointer;transition:all .18s;}
-.vp-big-btn:disabled{opacity:0.45;}
-.vp-big-btn.gazing{border-color:rgba(68,136,255,0.7)!important;background:rgba(68,136,255,0.18)!important;box-shadow:0 0 24px rgba(68,136,255,0.2);}
-.vp-ocr-btn{border-color:rgba(20,184,166,0.25)!important;background:linear-gradient(160deg,rgba(20,184,166,0.1),rgba(20,184,166,0.03))!important;}
-.vp-ocr-btn.gazing{border-color:rgba(20,184,166,0.7)!important;background:rgba(20,184,166,0.18)!important;box-shadow:0 0 24px rgba(20,184,166,0.2)!important;}
-.vpb-icon{font-size:32px;line-height:1;}
-.vpb-label{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);}
-.vpb-sub{font-size:10px;color:var(--muted);text-align:center;line-height:1.3;}
-.vpb-dwell{position:absolute;bottom:0;left:0;height:4px;background:linear-gradient(90deg,#4488ff,rgba(68,136,255,0.4));width:0%;border-radius:0 0 18px 18px;}
-.vp-ocr-btn .vpb-dwell{background:linear-gradient(90deg,#14b8a6,rgba(20,184,166,0.4));}
-
-/* Tekrar dinle */
-#vpRepeatRow{padding:0 12px 10px;flex-shrink:0;}
-.vp-repeat-btn{position:relative;overflow:hidden;width:100%;padding:14px;border-radius:14px;
-  border:1px solid rgba(255,224,51,0.3);background:rgba(255,224,51,0.08);
-  color:#ffe033;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
-.vp-repeat-btn.gazing{background:rgba(255,224,51,0.18)!important;border-color:rgba(255,224,51,0.6)!important;}
-
-/* ══ END NEW VISION CSS ══ */
-#visionModeTabs{display:flex;gap:8px;padding:10px 14px 0;flex-shrink:0;}
-.vmt{flex:1;padding:9px 8px;border-radius:12px;border:1px solid var(--border);
-  background:rgba(255,255,255,0.03);color:var(--muted);font-size:12px;
-  font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;
-  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;
-  position:relative;overflow:hidden;}
-.vmt.active{border-color:rgba(20,184,166,0.6);background:rgba(20,184,166,0.12);color:#5eead4;}
-.vmt-dwell{position:absolute;bottom:0;left:0;height:3px;background:#14b8a6;width:0%;border-radius:0 0 12px 12px;}
-#ocrCountdown{position:absolute;inset:0;
-  align-items:center;justify-content:center;gap:8px;
-  background:rgba(6,6,16,0.75);z-index:10;display:none;pointer-events:none;}
-#ocrCountdownRing{position:relative;width:80px;height:80px;}
-#ocrCountdownRing svg{position:absolute;inset:0;}
-#ocrCountdownNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#5eead4;}
-#ocrHint{font-size:12px;color:#5eead4;letter-spacing:.06em;font-family:'Syne',sans-serif;text-align:center;padding:0 20px;}
-  background:rgba(6,6,16,0.82);border:1px solid var(--border);border-radius:16px;
-  color:#555;font-size:12px;padding:6px 16px;z-index:70;display:none;white-space:nowrap;}
-#irisQ{position:fixed;top:12px;right:155px;z-index:70;display:none;
-  font-size:11px;color:#444;background:rgba(6,6,16,0.7);padding:4px 9px;border-radius:8px;}
-@media(max-width:500px){#irisQ{right:96px;}#statusBar{bottom:56px;}}
-
-/* ── ADVANCED TOOLS sub-section ── */
-.adv-tools-grid{display:flex;flex-direction:column;gap:8px;width:100%;}
-.adv-tool-btn{
-  display:flex;align-items:center;gap:14px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;padding:14px 16px;cursor:pointer;width:100%;text-align:left;
-  transition:border-color .15s,background .15s;color:var(--text);
-}
-.adv-tool-btn:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15);}
-.adv-tool-btn .atb-icon{font-size:24px;flex-shrink:0;}
-.adv-tool-btn .atb-body{flex:1;}
-.adv-tool-btn .atb-title{font-size:14px;font-weight:600;font-family:'Syne',sans-serif;color:var(--text);}
-.adv-tool-btn .atb-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-.adv-tool-btn .atb-arrow{font-size:20px;color:var(--muted);flex-shrink:0;}
-#advancedToolsSection h3{font-size:11px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;font-family:'Syne',sans-serif;}
-
-/* ── QUICK MSG PANEL ── */
-#quickMsgPanel{
-  position:fixed;inset:0;background:var(--bg);z-index:500;display:none;
-  flex-direction:column;overflow-y:auto;
-  padding:max(20px,env(safe-area-inset-top)) 20px max(80px,calc(70px + env(safe-area-inset-bottom)));
-}
-#quickMsgPanel .qm-hdr{
-  display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:20px;
-}
-#quickMsgPanel .qm-hdr h2{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;}
-.qm-contact-grid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:540px;margin:0 auto;}
-.qm-contact{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-  border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;
-  cursor:pointer;position:relative;overflow:hidden;transition:border-color .18s,background .18s;
-}
-.qm-contact.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.07);}
-.qm-contact .qmc-avatar{
-  width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:22px;flex-shrink:0;background:rgba(68,136,255,0.15);border:1px solid rgba(68,136,255,0.25);
-}
-.qm-contact .qmc-info{flex:1;}
-.qm-contact .qmc-name{font-size:16px;font-weight:700;font-family:'Syne',sans-serif;color:var(--text);}
-.qm-contact .qmc-role{font-size:11px;color:var(--muted);margin-top:2px;}
-.qm-contact .qmc-actions{display:flex;gap:8px;flex-shrink:0;}
-.qmc-action-btn{
-  padding:8px 14px;border-radius:12px;font-size:12px;font-weight:600;
-  font-family:'Syne',sans-serif;cursor:pointer;border:1px solid;transition:all .15s;
-}
-.qmc-action-btn.call{background:rgba(34,221,136,0.1);border-color:rgba(34,221,136,0.3);color:#22dd88;}
-.qmc-action-btn.msg{background:rgba(68,136,255,0.1);border-color:rgba(68,136,255,0.3);color:#88aaff;}
-.qm-contact .qm-dwell{position:absolute;bottom:0;left:0;height:3px;background:var(--dwell);width:0%;border-radius:0 0 18px 18px;}
-.qm-section-title{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:'Syne',sans-serif;margin:20px 0 10px;}
-.qm-msgs{display:flex;flex-direction:column;gap:8px;width:100%;max-width:540px;margin:0 auto;}
-.qm-msg{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;
-  cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s,background .15s;
-}
-.qm-msg.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.07);}
-.qm-msg .qmm-icon{font-size:20px;flex-shrink:0;}
-.qm-msg .qmm-text{font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;}
-.qm-msg .qm-dwell{position:absolute;bottom:0;left:0;height:3px;background:var(--dwell);width:0%;border-radius:0 0 14px 14px;}
-
-/* ── PHRASE BOARD ── */
-#phraseBoard{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;}
-#phraseBoard .pb-hdr{padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;}
-#phraseBoard .pb-hdr b{color:#aaa;flex:1;font-family:'Syne',sans-serif;}
-#phraseBoard .pb-grid{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;overflow-y:auto;}
-@media(max-width:500px){#phraseBoard .pb-grid{grid-template-columns:repeat(2,1fr);}}
-.phrase-btn{background:var(--surface);border:1px solid var(--border);border-radius:14px;
-  color:#fff;cursor:pointer;position:relative;overflow:hidden;display:flex;
-  align-items:center;justify-content:center;flex-direction:column;
-  text-align:center;padding:10px;min-height:80px;transition:border-color .2s;}
-.pb-i{font-size:22px;margin-bottom:4px;}
-.pb-t{font-size:12px;color:#bbb;}
-.phrase-btn.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.06);}
-.dwell-ov{position:absolute;bottom:0;left:0;height:4px;background:var(--dwell);width:0%;border-radius:0 0 14px 14px;}
-.ph-del{position:absolute;top:4px;right:5px;font-size:10px;color:#444;cursor:pointer;z-index:2;}
-.ph-del:hover{color:#f44;}
-.ph-add{background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.1);
-  border-radius:14px;min-height:80px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:#444;font-size:26px;transition:border-color .2s;}
-.ph-add:hover{border-color:#666;color:#fff;}
-#output{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,16,0.95);
-  border-top:1px solid var(--border);padding:12px 16px;z-index:90;display:none;align-items:center;gap:10px;}
-#outputText{flex:1;font-size:18px;color:#fff;font-family:'Syne',sans-serif;}
-#outputClose{padding:6px 12px;background:var(--surface);border:1px solid var(--border);
-  border-radius:8px;color:#888;font-size:12px;cursor:pointer;}
-
-/* ── MODAL ── */
-#addModal{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:700;display:none;align-items:center;justify-content:center;}
-.modal-box{background:#0e0e1e;border:1px solid rgba(255,255,255,0.13);border-radius:18px;
-  padding:24px;width:92%;max-width:370px;display:flex;flex-direction:column;gap:13px;}
-.modal-box h3{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;}
-.modal-box input{background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.13);
-  border-radius:10px;padding:10px 14px;color:#fff;font-size:15px;width:100%;}
-.modal-box input:focus{outline:none;border-color:var(--dwell);}
-.emoji-row{display:flex;gap:7px;flex-wrap:wrap;}
-.e-opt{font-size:22px;cursor:pointer;padding:4px;border-radius:6px;border:2px solid transparent;}
-.e-opt.sel{border-color:var(--dwell);background:rgba(255,224,51,0.1);}
-.modal-btns{display:flex;gap:8px;}
-
-/* ── DPI ── */
-#dpiPanel{position:fixed;inset:0;background:var(--bg);z-index:600;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px;}
-#dpiPanel h2{font-size:17px;font-weight:700;font-family:'Syne',sans-serif;}
-#dpiRuler{position:relative;height:30px;border:1px solid #444;border-radius:4px;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,0.04) 0,rgba(255,255,255,0.04) 1px,transparent 1px,transparent 10px);cursor:ew-resize;}
-#dpiHandle{position:absolute;top:0;right:0;width:12px;height:100%;background:#ffe033;border-radius:0 4px 4px 0;cursor:ew-resize;}
-
-/* ── IOT ── */
-#iotPanel{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:28px;}
-#iotPanel h2{font-size:19px;font-weight:700;font-family:'Syne',sans-serif;}
-.iot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%;max-width:480px;}
-.iot-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
-  padding:18px;text-align:center;cursor:pointer;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;gap:7px;transition:border-color .2s;}
-.iot-icon{font-size:28px;}.iot-name{font-size:13px;font-weight:600;}.iot-state{font-size:11px;color:#555;}
-.iot-card.on{border-color:#4d4;background:rgba(0,200,80,0.05);}
-.iot-card.on .iot-state{color:#4d4;}
-.iot-card.gazing{border-color:var(--dwell);}
-.iot-badge{background:rgba(255,150,0,0.08);border:1px solid rgba(255,150,0,0.25);
-  border-radius:8px;padding:8px 14px;font-size:12px;color:#fa0;text-align:center;max-width:420px;}
-
-
-/* ═══════════════════════════════════════════════════
-   KEYBOARD — CLEAN MODERN DESIGN
-   ═══════════════════════════════════════════════════ */
-#kbPanel{
-  position:fixed;inset:0;
-  background:#0a0a14;
-  z-index:400;display:none;flex-direction:column;
-}
-#kbTextArea{
-  flex-shrink:0;padding:12px 16px;min-height:58px;max-height:100px;
-  overflow-y:auto;font-size:20px;font-family:'Syne',sans-serif;
-  color:#fff;line-height:1.5;word-break:break-all;
-  background:rgba(255,255,255,0.04);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  display:flex;align-items:flex-start;
-}
-#kbTextArea .kb-cursor{
-  display:inline-block;width:2px;height:24px;background:#4488ff;
-  margin-left:2px;flex-shrink:0;vertical-align:text-bottom;
-  animation:kbCur 1s step-end infinite;
-}
-@keyframes kbCur{0%,100%{opacity:1}50%{opacity:0}}
-#kbTextArea:empty::before{content:attr(data-ph);color:#2a2a3a;font-size:15px;}
-#kbTopBar{
-  flex-shrink:0;display:flex;align-items:center;gap:6px;
-  padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.06);
-  background:rgba(0,0,0,0.3);
-}
-#kbModeToggle{
-  display:flex;background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.09);border-radius:8px;overflow:hidden;
-}
-.kbmt-btn{
-  padding:5px 12px;font-size:11px;cursor:pointer;border:none;
-  background:transparent;color:rgba(255,255,255,0.4);
-  font-family:'Syne',sans-serif;font-weight:600;transition:all .12s;
-}
-.kbmt-btn.active{background:rgba(68,136,255,0.25);color:#aaccff;}
-#kbTopTitle{flex:1;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;letter-spacing:.06em;}
-#kbCloseBtn2{
-  padding:5px 12px;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);border-radius:8px;
-  color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;
-}
-/* Suggestions */
-#kbSugg{
-  flex-shrink:0;display:flex;gap:5px;padding:5px 8px;
-  min-height:38px;align-items:center;overflow-x:auto;scrollbar-width:none;
-  border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.2);
-}
-#kbSugg::-webkit-scrollbar{display:none;}
-.kb-sg{
-  padding:4px 13px;background:rgba(68,136,255,0.09);
-  border:1px solid rgba(68,136,255,0.2);border-radius:14px;
-  font-size:12px;color:rgba(255,255,255,0.75);white-space:nowrap;
-  cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;
-  font-family:'Syne',sans-serif;font-weight:600;transition:border-color .1s,background .1s;
-}
-.kb-sg.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.1);color:#ffe033;}
-.kb-sg .dwell-ov{position:absolute;bottom:0;left:0;height:2px;background:var(--dwell);width:0%;}
-.kb-sg.ai-sugg{background:rgba(168,85,247,0.09);border-color:rgba(168,85,247,0.22);}
-/* Keys container */
-#kbRows{
-  flex:1;display:flex;flex-direction:column;
-  padding:5px 6px 6px;gap:4px;justify-content:center;
-  overflow:hidden;
-}
-.kb-row{display:flex;gap:4px;justify-content:center;align-items:stretch;}
-/* Base key */
-.kb-key{
-  flex:1;min-width:0;max-width:58px;
-  height:50px;
-  background:rgba(255,255,255,0.07);
-  border:1px solid rgba(255,255,255,0.1);
-  border-bottom:3px solid rgba(0,0,0,0.4);
-  border-radius:10px;
-  color:#fff;font-size:17px;font-weight:500;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;overflow:hidden;
-  user-select:none;touch-action:manipulation;
-  transition:background .08s,border-color .08s,transform .06s;
-}
-/* Wide / extra-wide */
-.kb-key.wide{flex:2.2;max-width:110px;font-size:13px;color:rgba(255,255,255,0.6);}
-.kb-key.xwide{flex:5;max-width:none;font-size:13px;}
-/* Function key style */
-.kb-key.fn{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.07);}
-/* States */
-.kb-key:active,.kb-key.pressed{
-  transform:translateY(1px);background:rgba(255,224,51,0.15)!important;
-  border-bottom-width:1px!important;transition:none!important;
-}
-.kb-key.gazing{
-  background:rgba(255,224,51,0.1)!important;
-  border-color:rgba(255,224,51,0.6)!important;
-  transform:scale(1.05);
-  box-shadow:0 0 12px rgba(255,224,51,0.2);
-}
-.kb-key.blink-ready{border-color:#4af!important;background:rgba(68,170,255,0.12)!important;}
-/* Dwell bar */
-.kb-key .dwell-ov{
-  position:absolute;bottom:0;left:0;height:3px;
-  background:var(--dwell);width:0%;border-radius:0 0 10px 10px;
-}
-/* Special keys */
-.kb-key[data-key="DEL"]{background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.18);color:#ff9999;}
-.kb-key[data-key="DEL"].gazing{background:rgba(220,38,38,0.22)!important;border-color:rgba(220,38,38,0.7)!important;}
-.kb-key[data-key="CLOSE"]{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.18);color:#4ade80;font-size:12px;}
-.kb-key[data-key="CLOSE"].gazing{background:rgba(34,197,94,0.18)!important;border-color:rgba(34,197,94,0.7)!important;}
-.kb-key[data-key="SHIFT"]{color:rgba(255,255,255,0.7);}
-/* Actions bar */
-#kbActions{
-  flex-shrink:0;display:flex;gap:5px;padding:5px 8px;
-  border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.2);
-}
-.kb-act{
-  flex:1;padding:7px;border-radius:9px;font-size:12px;cursor:pointer;
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-  color:rgba(255,255,255,0.55);font-family:'Syne',sans-serif;font-weight:600;
-  transition:background .12s,color .12s;
-}
-.kb-act:active{background:rgba(255,255,255,0.12);}
-.kb-act.listening{background:rgba(220,38,38,0.15);border-color:rgba(220,38,38,0.35);color:#ff9999;}
-/* Voice overlay */
-#kbVoiceStatus{
-  position:absolute;bottom:56px;left:50%;transform:translateX(-50%);
-  background:rgba(6,6,16,0.95);border:1px solid rgba(68,136,255,0.35);
-  border-radius:16px;padding:12px 20px;text-align:center;z-index:10;
-  display:none;flex-direction:column;gap:4px;min-width:200px;
-  backdrop-filter:blur(10px);
-}
-#kbVoiceStatus.show{display:flex;}
-.vs-icon{font-size:22px;}
-.vs-msg{font-size:13px;color:#aaa;font-family:'Syne',sans-serif;}
-.vs-interim{font-size:12px;color:#666;font-style:italic;}
-/* Responsive */
-@media(max-width:500px){
-  #kbRows{padding:4px 5px 5px;gap:3px;}
-  .kb-key{height:44px;font-size:15px;border-radius:9px;}
-  .kb-key.wide{font-size:12px;}
-}
-@media(max-width:380px){
-  .kb-key{height:40px;font-size:13px;max-width:48px;}
-  .kb-key.wide{max-width:86px;font-size:11px;}
-}
-}
-@keyframes kbBlinkRdy{
-  from{box-shadow:0 0 0 1px rgba(68,170,255,0.2);}
-  to{box-shadow:0 0 0 3px rgba(68,170,255,0.45),0 0 14px rgba(68,170,255,0.2);}
-}
-.kb-key .dwell-ov{
-  position:absolute;bottom:0;left:0;height:3px;
-  background:var(--dwell);width:0%;
-  border-radius:0 0 10px 10px;
-}
-/* Key type variants */
-.kb-key.key-del{background:rgba(255,55,55,0.08);border-color:rgba(255,55,55,0.2);}
-.kb-key.key-del:active{background:rgba(255,55,55,0.28)!important;}
-.kb-key.key-fn{background:rgba(68,136,255,0.09);border-color:rgba(68,136,255,0.22);}
-.kb-key.key-fn:active{background:rgba(68,136,255,0.25)!important;}
-.kb-key.key-shift-on{background:rgba(255,224,51,0.12);border-color:rgba(255,224,51,0.45);color:var(--dwell);}
-
-/* ── BOTTOM ACTION BAR ── */
-#kbActions{
-  flex-shrink:0;display:flex;gap:4px;
-  padding:4px 8px max(6px,env(safe-area-inset-bottom));
-  border-top:1px solid var(--border);
-}
-.kb-act{
-  flex:1;padding:9px 4px;border-radius:9px;
-  font-size:11px;cursor:pointer;font-family:'Syne',sans-serif;
-  font-weight:600;border:1px solid;transition:background .12s;
-}
-#kbTTS{background:rgba(224,32,32,0.1);border-color:rgba(224,32,32,0.28);color:#ff8888;}
-#kbTTS:active{background:rgba(224,32,32,0.28)!important;}
-#kbVoice{background:rgba(68,136,255,0.09);border-color:rgba(68,136,255,0.25);color:#88aaff;}
-#kbVoice:active{background:rgba(68,136,255,0.25)!important;}
-#kbVoice.listening{background:rgba(255,40,40,0.18);border-color:#f44;color:#f99;
-  animation:kbListening .6s infinite;}
-@keyframes kbListening{0%,100%{opacity:1}50%{opacity:.55}}
-#kbBlinkToggle{background:rgba(255,224,51,0.05);border-color:rgba(255,224,51,0.2);color:#887700;}
-#kbBlinkToggle.active{background:rgba(255,224,51,0.15);border-color:rgba(255,224,51,0.55);color:#ffe033;}
-
-/* ── VOICE STATUS OVERLAY ── */
-#kbVoiceStatus{
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  background:rgba(6,6,16,0.88);
-  display:none;flex-direction:column;
-  align-items:center;justify-content:center;gap:10px;
-  z-index:100;pointer-events:none;
-}
-#kbVoiceStatus.show{display:flex;}
-#kbVoiceStatus .vs-icon{font-size:36px;}
-#kbVoiceStatus .vs-msg{font-size:14px;color:#88aaff;font-family:'Syne',sans-serif;}
-#kbVoiceStatus .vs-interim{font-size:13px;color:var(--muted);max-width:280px;text-align:center;}
-
-/* ── MOBILE ── */
-@media(max-width:500px){
-  #kbTextArea{font-size:15px;min-height:46px;padding:8px 12px;}
-  .kb-key{height:42px;font-size:14px;max-width:46px;border-radius:8px;}
-  .kb-key.wide{max-width:90px;}
-  .kb-sg{font-size:11px;padding:3px 10px;}
-  .kb-act{font-size:10px;padding:8px 3px;}
-}
-@media(max-width:380px){
-  .kb-key{height:38px;font-size:13px;max-width:38px;}
-  .kb-key.wide{max-width:76px;}
-}
-
-/* ── A11Y ── */
-#a11yPanel{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;
-  flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;padding:24px;overflow-y:auto;}
-#a11yPanel h2{font-size:19px;font-weight:700;margin-top:8px;font-family:'Syne',sans-serif;}
-.a11y-section{width:100%;max-width:540px;}
-.a11y-section h3{font-size:12px;color:#555;letter-spacing:.07em;margin-bottom:10px;text-transform:uppercase;}
-.a11y-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.a11y-card{background:var(--surface);border:2px solid var(--border);border-radius:13px;
-  padding:16px 13px;display:flex;flex-direction:column;align-items:center;gap:7px;
-  cursor:pointer;transition:border-color .2s;text-align:center;}
-.a11y-card:hover{background:rgba(255,255,255,0.07);}
-.a11y-card.active{border-color:var(--dwell);background:rgba(255,224,51,0.06);}
-.a11y-card .ai{font-size:28px;}.a11y-card .at{font-size:14px;font-weight:600;}.a11y-card .al{font-size:12px;color:var(--muted);}
-.sl-row{width:100%;max-width:540px;background:var(--surface);border:1px solid var(--border);
-  border-radius:11px;padding:13px 16px;display:flex;flex-direction:column;gap:7px;}
-.sl-row label{font-size:13px;color:var(--muted);}
-.sl-row input{width:100%;accent-color:#4488ff;}
-.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:540px;}
-.mode-card{background:var(--surface);border:2px solid var(--border);border-radius:13px;
-  padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  cursor:pointer;transition:border-color .2s,background .2s;text-align:center;}
-.mode-card.active{border-color:var(--dwell);background:rgba(255,224,51,0.06);}
-.mode-card .mi{font-size:32px;}.mode-card .mt{font-size:14px;font-weight:600;}.mode-card .ml2{font-size:12px;color:var(--muted);}
-
-/* GENERAL BUTTONS */
-.btn-p{padding:12px 30px;background:linear-gradient(135deg,#8a1010,#cc2020);border:none;
-  border-radius:12px;color:#fff;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.04em;}
-.btn-s{padding:10px 20px;background:var(--surface);border:1px solid var(--border);
-  border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer;transition:background .15s;}
-.btn-s:hover{background:rgba(255,255,255,0.09);color:#fff;}
-
-/* ══════════════════════════════════════════
-   ── MOBILE OPTIMIZATION ──
-   ══════════════════════════════════════════ */
-
-/* --- GENERAL MOBILE --- */
-@media(max-width:600px){
-  :root{ --font:15px; }
-
-  /* Safe area padding for all screens */
-  .screen{
-    padding: 20px 16px;
-    padding-top: max(20px, env(safe-area-inset-top));
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-    gap:14px;
-  }
-
-  /* ── START SCREEN ── */
-  #startInner{gap:14px; max-width:100%;}
-  .start-eye-wrap{width:56px;height:56px;}
-  .start-eye-outer{width:56px;height:56px;}
-  .start-eye-inner{width:34px;height:34px;font-size:16px;}
-  .start-logo{font-size:28px;}
-  .start-tagline{font-size:11px;}
-  .start-hero h2{font-size:17px;}
-  .start-hero p{font-size:12px;}
-  .privacy-badge{font-size:11px;padding:8px 12px;}
-  .btn-start-main{font-size:14px;padding:13px 18px;}
-  .btn-start-saved{font-size:12px;padding:11px 16px;}
-  .start-v{bottom:8px;right:10px;}
-
-  /* ── MAIN UI — bottom tab bar ── */
-  #mainUI{
-    top:auto; bottom:0; left:0; right:0;
-    flex-direction:row; flex-wrap:wrap;
-    padding:5px 5px max(5px, env(safe-area-inset-bottom));
-    gap:3px;
-    background:rgba(4,4,12,0.97);
-    border-top:1px solid var(--border);
-    z-index:100;
-  }
-  .panel{ display:none; }
-  .btn-sm{
-    flex:1; min-width:calc(25% - 4px);
-    text-align:center; padding:9px 2px;
-    font-size:9px; line-height:1.3;
-    min-height:44px; /* iOS touch target */
-  }
-
-  /* ── STATUS BAR ── */
-  #statusBar{
-    bottom: max(54px, calc(54px + env(safe-area-inset-bottom)));
-    font-size:9.5px; padding:4px 10px;
-    max-width:calc(100vw - 100px);
-    white-space:normal; text-align:center; line-height:1.4;
-  }
-  #irisQ{ right:88px; font-size:10px; }
-
-  /* ── VIDEO ── */
-  #video{ width:70px; height:39px; bottom:max(58px, calc(58px + env(safe-area-inset-bottom))); right:5px; }
-
-  /* ── REPORT ── */
-  .rep-grid{ grid-template-columns:repeat(3,1fr); gap:6px; }
-  .mc{ padding:9px 5px; }
-  .mv{ font-size:17px; }
-  .rep-btns{ flex-direction:column; gap:8px; }
-  .rep-btns .btn-p, .rep-btns .btn-s{ width:100%; text-align:center; }
-  .err-list{ max-height:120px; }
-
-  /* ── PHRASE BOARD ── */
-  #phraseBoard .pb-grid{ grid-template-columns:repeat(2,1fr); gap:6px; padding:8px; }
-  .phrase-btn{ min-height:68px; padding:8px; }
-  .pb-i{ font-size:20px; }
-  .pb-t{ font-size:11px; }
-  #phraseBoard .pb-hdr{ padding:9px 12px; font-size:12px; }
-
-  /* ── KEYBOARD ── */
-  #kbHdr{ padding:5px 7px; }
-  #kbDisplay{ font-size:14px; min-height:36px; padding:5px 9px; }
-  #kbSugg{ padding:3px 5px; min-height:36px; }
-  .kb-sg{ padding:5px 10px; font-size:12px; min-height:36px; } /* touch target */
-  #kbRows{ padding:2px 3px; gap:2px; }
-  .kb-row{ gap:2px; }
-  .kb-key{ max-width:40px; min-width:20px; height:42px; font-size:13px; border-radius:7px; }
-  .kb-key.wide{ max-width:78px; font-size:11px; }
-  #kbBottomBar{ padding:4px 5px max(6px, env(safe-area-inset-bottom)); gap:3px; }
-  #kbTTS,#kbVoice,#kbBlinkToggle,#kbCloseBtn2{ font-size:11px; padding:9px 4px; min-height:44px; }
-
-  /* ── A11Y PANEL ── */
-  #a11yPanel{
-    padding:14px 10px;
-    padding-top: max(14px, env(safe-area-inset-top));
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
-    gap:12px;
-  }
-  #a11yPanel h2{ font-size:16px; margin-top:2px; }
-  .a11y-section h3{ font-size:11px; margin-bottom:7px; }
-  .a11y-grid{ gap:7px; grid-template-columns:repeat(2,1fr); }
-  .a11y-card{ padding:11px 8px; gap:4px; min-height:72px; } /* touch target */
-  .a11y-card .ai{ font-size:22px; }
-  .a11y-card .at{ font-size:12px; }
-  .a11y-card .al{ font-size:10px; }
-  .mode-grid{ gap:7px; }
-  .mode-card{ padding:11px 8px; gap:5px; min-height:72px; }
-  .mode-card .mi{ font-size:24px; }
-  .mode-card .mt{ font-size:12px; }
-  .sl-row{ padding:10px 11px; }
-  .sl-row label{ font-size:12px; }
-  .sl-row input[type=range]{ width:100%; }
-
-  /* ── IOT PANEL — 2 col with bigger cards ── */
-  #iotPanel{
-    padding:14px 10px;
-    padding-top: max(14px, env(safe-area-inset-top));
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
-    gap:12px; overflow-y:auto;
-  }
-  #iotPanel h2{ font-size:16px; }
-  .iot-grid{ grid-template-columns:repeat(2,1fr); gap:8px; max-width:100%; }
-  .iot-card{ padding:14px 8px; gap:5px; min-height:80px; } /* good touch target */
-  .iot-icon{ font-size:26px; }
-  .iot-name{ font-size:12px; }
-  .iot-state{ font-size:10px; }
-  .iot-badge{ font-size:11px; padding:7px 9px; }
-
-  /* ── MODAL ── */
-  .modal-box{ padding:16px 12px; gap:10px; width:96%; }
-  .modal-box h3{ font-size:13px; }
-  .modal-box input{ font-size:14px; padding:10px 12px; min-height:44px; }
-  .emoji-row{ gap:5px; }
-  .e-opt{ font-size:22px; padding:6px; } /* bigger tap target */
-
-  /* ── DPI PANEL ── */
-  #dpiPanel{ padding:18px 14px; gap:14px; }
-  #dpiPanel h2{ font-size:15px; }
-  #dpiRuler{ max-width:calc(100vw - 60px); }
-
-  /* ── CALIB / EVAL ── */
-  #calibMsg, #evalMsg{
-    font-size:13px; padding:8px 14px;
-    bottom:max(16px, env(safe-area-inset-bottom));
-    max-width:calc(100vw - 32px); white-space:normal; text-align:center;
-  }
-  #calibCounter, #evalCounter{ font-size:12px; top:max(16px, env(safe-area-inset-top)); }
-  #qualityBar{ top:max(44px, calc(44px + env(safe-area-inset-top))); }
-  #calibErrMsg{ font-size:11px; padding:5px 12px; max-width:calc(100vw - 32px); white-space:normal; text-align:center; }
-
-  /* ── WARN BANNERs ── */
-  #lightWarn{ top:max(8px, env(safe-area-inset-top)); font-size:11px; }
-  #headWarn{ top:max(36px, calc(36px + env(safe-area-inset-top))); font-size:11px; }
-  #blinkFlash{ top:max(8px, env(safe-area-inset-top)); font-size:11px; padding:5px 14px; }
-  #blinkHint{ top:max(8px, env(safe-area-inset-top)); font-size:10px; padding:4px 11px; }
-  #olIndicator{ top:max(34px, calc(34px + env(safe-area-inset-top))); font-size:9px; right:8px; }
-
-  /* ── OUTPUT BAR ── */
-  #output{
-    padding:10px 12px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
-  }
-  #outputText{ font-size:15px; }
-  #outputClose{ padding:8px 14px; min-height:40px; }
-
-  /* ── DIAG / ARCH PANELS ── */
-  #diagPanel, #archPanel{
-    padding:14px 10px;
-    padding-top: max(14px, env(safe-area-inset-top));
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
-  }
-
-  /* ── GENERAL BUTTONS ── */
-  .btn-p{ padding:11px 18px; font-size:13px; min-height:44px; }
-  .btn-s{ padding:9px 14px; font-size:12px; min-height:40px; }
-
-  /* ── SCROLL ZONES — push up above bottom tab bar ── */
-  #scrollZoneBottom{
-    bottom: max(54px, calc(54px + env(safe-area-inset-bottom)));
-  }
-}
-
-/* Very small phones (≤ 380px) */
-@media(max-width:380px){
-  .start-logo{ font-size:24px; }
-  .start-hero h2{ font-size:15px; }
-  .btn-sm{ min-height:78px; border-radius:12px; }
-  .btn-sm .bsm-icon{ font-size:22px; }
-  .btn-sm .bsm-label{ font-size:9px; }
-  .kb-key{ max-width:34px; height:38px; font-size:12px; }
-  .kb-key.wide{ max-width:66px; }
-  .rep-grid{ grid-template-columns:repeat(3,1fr); gap:5px; }
-  .mv{ font-size:15px; }
-  .a11y-card{ padding:9px 6px; min-height:64px; }
-  .a11y-card .ai{ font-size:18px; }
-  .iot-card{ min-height:70px; padding:10px 6px; }
-}
-
-/* Landscape phone */
-@media(max-width:900px) and (orientation:landscape) and (max-height:500px){
-  #startInner{ gap:8px; }
-  .start-eye-wrap{ width:40px; height:40px; }
-  .start-eye-outer{ width:40px; height:40px; }
-  .start-eye-inner{ width:26px; height:26px; font-size:13px; }
-  .start-logo{ font-size:22px; }
-  .start-tagline{ display:none; }
-  .start-hero p{ display:none; }
-  .privacy-badge{ padding:5px 9px; font-size:10px; }
-  .screen{ padding:8px 12px; gap:7px; }
-
-  #mainUI{
-    padding:8px 12px;
-  }
-  #mainMenuGrid{ gap:6px; }
-  .btn-sm{ min-height:72px; border-radius:10px; }
-  .btn-sm .bsm-icon{ font-size:22px; }
-  .btn-sm .bsm-label{ font-size:9px; }
-  #statusBar{
-    bottom:6px; left:6px; right:62px;
-    font-size:9px; max-width:none;
-  }
-  #video{ bottom:6px; right:60px; width:72px; height:40px; }
-  #irisQ{ right:65px; }
-  #mainTopBar{ padding:6px 12px; }
-  #infoRow{ padding:5px 12px; }
-  #mainContent{ padding:6px 12px 70px; gap:6px; }
-  #mainMenuGrid{ gap:6px; }
-  .kb-key{ height:36px; }
-  #kbRows{ gap:3px; padding:3px 6px; }
-  #scrollZoneTop,#scrollZoneBottom{ height:clamp(36px,10vh,56px); }
-}
-</style>
+  <link rel="stylesheet" href="eyesense.css">
 </head>
 <body>
 
@@ -1379,41 +38,55 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
 
 <!-- ═══ START SCREEN ═══ -->
 <div class="screen" id="startScreen">
-  <div id="startInner">
 
-    <!-- Language Selector -->
-    <div class="lang-switcher">
-      <button class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')">🇹🇷 TR</button>
-      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
-    </div>
-
-    <div class="start-eye-wrap">
-      <div class="start-eye-outer"><div class="start-eye-inner">👁</div></div>
-    </div>
-
-    <div>
-      <div class="start-logo"><span class="eye-part">Eye</span><span class="sense-part">Sense</span></div>
-      <div class="start-tagline" id="startTagline">GÖZ HAREKETİ İLE İLETİŞİM</div>
-    </div>
-
-    <div class="start-hero">
-      <h2 id="startHeroTitle">Gözlerinle <em>Konuş</em></h2>
-      <p id="startHeroSub">Göz izleme teknolojisi ile ellerin olmadan iletişim kur, yaz, seç.</p>
-    </div>
-
-    <div class="privacy-badge" id="startPrivacy">
-      🔒 <b>Gizlilik önce gelir</b> — Hiçbir görüntü veya kişisel veri sunucuya gönderilmez.
-    </div>
-
-    <div id="savedInfo" class="saved-info" style="display:none;width:100%;"></div>
-
-    <div class="start-btn-group">
-      <button class="btn-start-main" id="startFreshBtn">👁 Kalibrasyona Başla</button>
-      <button class="btn-start-saved" id="useSavedBtn" style="display:none">▶ Kaydedilmiş Kalibrasyon</button>
-      <button class="btn-start-saved" id="howBtn">📖 Nasıl Kullanılır</button>
+  <!-- Orta üst dil kapsülü -->
+  <div style="position:absolute;top:max(16px,env(safe-area-inset-top));left:0;right:0;display:flex;justify-content:center;z-index:5;pointer-events:none;">
+    <div class="lang-switcher" style="pointer-events:auto;">
+      <button class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')">TR</button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">ENG</button>
     </div>
   </div>
-  <div class="start-v">v13</div>
+
+  <div id="startInner">
+
+    <!-- Üst: Göz + Logo -->
+    <div class="ss-top">
+      <div class="start-eye-wrap">
+        <div class="start-eye-orbit"></div>
+        <div class="start-eye-orbit2"></div><div class="start-eye-outer"><div class="start-eye-inner">👁</div></div>
+      </div>
+      <div class="start-logo"><span class="eye-part">Eye</span><span class="sense-part">Sense</span></div>
+    </div>
+
+    <!-- Orta: Hero metin -->
+    <div class="ss-hero">
+      <h2 id="startHeroTitle">Gözlerinle <em>Konuş</em></h2>
+      <p id="startHeroSub">Ellerin olmadan iletişim kur, yaz, seç.</p>
+    </div>
+
+    <!-- Kalibrasyon durumu -->
+    <div class="ss-status" id="savedInfo"></div>
+
+    <!-- Ana buton -->
+    <div class="start-btn-group">
+      <button class="btn-start-main" id="startFreshBtn">👁&nbsp; Kalibrasyona Başla</button>
+
+      <!-- İkincil butonlar yan yana -->
+      <div class="ss-secondary">
+        <button class="btn-start-saved" id="useSavedBtn" disabled>▶ Kayıtlı Kalibrasyon</button>
+        <button class="btn-start-direct" id="directEntryBtn" onclick="directEntry()">☝ Direkt Giriş</button>
+      </div>
+
+      <button class="btn-start-saved btn-how" id="howBtn">📖 Nasıl Kullanılır</button>
+    </div>
+
+    <!-- Privacy -->
+    <div class="privacy-badge" id="startPrivacy">
+      🔒 <b>Gizlilik önce gelir</b> — Hiçbir görüntü sunucuya gönderilmez.
+    </div>
+
+  </div>
+  <div class="start-v">v14</div>
 </div>
 
 <!-- CALIB -->
@@ -1458,8 +131,8 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">1</div>
     <div class="how-body">
       <div class="how-title">Choose your input mode</div>
-      <div class="how-desc">On the start screen, pick <b>Eye Gaze</b> for hands-free use, <b>Touch</b> for finger control, or <b>Both</b> for combined input. Eye Gaze requires calibration.</div>
-      <span class="how-tag blue">👁 Eye · ☝️ Touch · 🤝 Both</span>
+      <div class="how-desc">On the start screen, tap <b>Start Calibration</b> for eye gaze, or <b>Direct Entry</b> to skip to touch mode. If you have a saved calibration, use <b>Use Saved Calibration</b> to continue.</div>
+      <span class="how-tag blue">👁 Eye · ☝️ Touch · 💾 Saved</span>
     </div>
   </div>
 
@@ -1467,7 +140,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">2</div>
     <div class="how-body">
       <div class="how-title">Calibrate (Eye Gaze only)</div>
-      <div class="how-desc">17 dots will appear on screen one by one. Look steadily at each dot until the ring fills. Stay still — the system samples your iris position to build a personal model. Takes about 45 seconds.</div>
+      <div class="how-desc">17 dots appear one by one. Look steadily at each until the ring fills. Takes ~45 seconds. Calibration data is saved on your device.</div>
       <span class="how-tag">🎯 ~45 seconds · 17 points</span>
     </div>
   </div>
@@ -1476,7 +149,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">3</div>
     <div class="how-body">
       <div class="how-title">Dwell to select</div>
-      <div class="how-desc">Look at any button and hold your gaze steady. A yellow bar fills from the bottom — when it reaches 100% the item is selected. Dwell time is adjustable (default 1.2s).</div>
+      <div class="how-desc">Look at any button and hold your gaze. A yellow bar fills — when full the item is selected. Dwell duration is adjustable in Accessibility settings (default 1.2s).</div>
       <span class="how-tag">⏱ Gaze + hold = select</span>
     </div>
   </div>
@@ -1485,7 +158,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">4</div>
     <div class="how-body">
       <div class="how-title">Single blink = quick select</div>
-      <div class="how-desc">Enable <b>Single Blink Select</b> in Accessibility settings. Then, when you are looking at an item with at least 8% dwell, a single blink instantly selects it — much faster than waiting for the full dwell.</div>
+      <div class="how-desc">Enable <b>Single Blink Select</b> in Accessibility. With 8%+ dwell on an item, a single blink instantly selects it.</div>
       <span class="how-tag">😉 Blink = select (optional)</span>
     </div>
   </div>
@@ -1494,7 +167,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">5</div>
     <div class="how-body">
       <div class="how-title">Double blink = go back</div>
-      <div class="how-desc">Blink twice quickly (within 480ms) to close the current panel and return to the previous screen. Works everywhere — no settings needed.</div>
+      <div class="how-desc">Blink twice within 480ms to close the current panel and return. Works everywhere — no settings needed.</div>
       <span class="how-tag">😉😉 Double blink = back</span>
     </div>
   </div>
@@ -1503,7 +176,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">6</div>
     <div class="how-body">
       <div class="how-title">Iris scroll inside panels</div>
-      <div class="how-desc">When a panel (Phrase Board, Accessibility, Smart Home, etc.) is open, move your gaze to the <b>top or bottom edge</b> of that panel to scroll. The further into the edge zone, the faster it scrolls.</div>
+      <div class="how-desc">With a panel open, move your gaze to the <b>top or bottom edge</b> to scroll. The deeper into the edge zone, the faster it scrolls. Works in Phrase Board, Accessibility and Smart Home panels.</div>
       <span class="how-tag green">↕ Top/bottom edge = scroll</span>
     </div>
   </div>
@@ -1512,7 +185,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">7</div>
     <div class="how-body">
       <div class="how-title">Phrase Board</div>
-      <div class="how-desc">Dwell on a phrase card to speak it aloud. Tap + to add your own phrases with a custom emoji. The system remembers your most-used phrases and shows them first.</div>
+      <div class="how-desc">Dwell on a phrase card to speak it aloud. Dwell on the <b>+</b> button to add your own phrases with a custom emoji.</div>
       <span class="how-tag blue">💬 Gaze → dwell → speaks</span>
     </div>
   </div>
@@ -1521,7 +194,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
     <div class="how-num">8</div>
     <div class="how-body">
       <div class="how-title">Keyboard</div>
-      <div class="how-desc">Dwell on each key to type. Word suggestions appear at the top — dwell on a suggestion to complete the word. Press 🔊 to read your text aloud. Use 🎤 for voice dictation.</div>
+      <div class="how-desc">Dwell on each key to type. Dwell on word suggestions at the top to autocomplete. Press <b>🔊</b> to read aloud, <b>🎤</b> for voice dictation.</div>
       <span class="how-tag blue">⌨️ Dwell-type · suggestions · TTS</span>
     </div>
   </div>
@@ -1529,17 +202,44 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
   <div class="how-step">
     <div class="how-num">9</div>
     <div class="how-body">
-      <div class="how-title">Online learning</div>
-      <div class="how-desc">Every time you dwell-select something, the system silently refines your gaze model. After 8 new interactions a small model update runs — accuracy improves over time without recalibration.</div>
-      <span class="how-tag green">🔄 Auto-improves with use</span>
+      <div class="how-title">What's Around Me?</div>
+      <div class="how-desc">Point your camera at your surroundings — AI describes what it sees aloud. With an API key: full visual analysis. Without: OCR text-reading mode.</div>
+      <span class="how-tag">👁 Scan → AI describes</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">10</div>
     <div class="how-body">
+      <div class="how-title">Quick Message</div>
+      <div class="how-desc">Call saved contacts or send preset messages. Dwell on 📞 or 💬 to act. Customize contacts via "Edit Contacts".</div>
+      <span class="how-tag">📲 Ara · Mesaj Gönder</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">11</div>
+    <div class="how-body">
+      <div class="how-title">Smart Home</div>
+      <div class="how-desc">Turn devices on/off (lights, blinds, thermostat, etc.) by dwelling on their card. Fully functional in demo mode; real devices require MQTT or REST API.</div>
+      <span class="how-tag">🏠 Dwell = toggle device</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">12</div>
+    <div class="how-body">
+      <div class="how-title">Panic Button</div>
+      <div class="how-desc">Dwell on the red button in the top-right of the main menu. An emergency alert with your location is sent to your caregiver.</div>
+      <span class="how-tag">🆘 Long gaze = emergency alert</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">13</div>
+    <div class="how-body">
       <div class="how-title">Tips for best accuracy</div>
-      <div class="how-desc">• Sit 40–55 cm from screen · • Good lighting on your face · • Keep head relatively still · • Recalibrate if you move to a different device or change seating position · • Use Accuracy Test to check your current error.</div>
+      <div class="how-desc">• Sit 40–55 cm from screen · • Good face lighting · • Keep head still · • Recalibrate when changing device · • Use Accessibility → Accuracy Test to check your error</div>
       <span class="how-tag">💡 Distance · Light · Stillness</span>
     </div>
   </div>
@@ -1646,8 +346,9 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
       <div id="mainLogoText"><span class="eye-part">Eye</span><span class="sense-part">Sense</span></div>
     </div>
     <div id="mainLangBar">
-      <button class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')">🇹🇷 TR</button>
-      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
+      <button class="btn-back-home" id="backToStartBtn" onclick="backToStart()">⬅ Başlangıç</button>
+      <button class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')">TR</button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">ENG</button>
     </div>
   </div>
 
@@ -1660,11 +361,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
         <div class="lw-value" id="locValue">Alınıyor…</div>
       </div>
     </div>
-    <button id="panicBtn" onclick="triggerPanic()">
-      <span class="pa-icon">🆘</span>
-      <span class="pa-label" id="panicLabel">PANİK</span>
-      <div class="pa-dwell" id="panicDwell"></div>
-    </button>
+
   </div>
 
   <!-- Scrollable content -->
@@ -1845,51 +542,29 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
       </div>
       <div class="qm-dwell" id="qmc0dwell"></div>
     </div>
-    <div class="qm-contact" id="qmc1">
-      <div class="qmc-avatar" id="qmc1av">👤</div>
-      <div class="qmc-info">
-        <div class="qmc-name" id="qmc1name">Kişi 2</div>
-        <div class="qmc-role" id="qmc1role">Aile</div>
-      </div>
-      <div class="qmc-actions">
-        <button class="qmc-action-btn call" onclick="qmCall(1)">📞</button>
-        <button class="qmc-action-btn msg"  onclick="qmSms(1)">💬</button>
-      </div>
-      <div class="qm-dwell" id="qmc1dwell"></div>
-    </div>
-    <div class="qm-contact" id="qmc2">
-      <div class="qmc-avatar" id="qmc2av">🏥</div>
-      <div class="qmc-info">
-        <div class="qmc-name" id="qmc2name">Acil Servis</div>
-        <div class="qmc-role" id="qmc2role">Acil durum</div>
-      </div>
-      <div class="qmc-actions">
-        <button class="qmc-action-btn call" onclick="qmCall(2)">📞 112</button>
-      </div>
-      <div class="qm-dwell" id="qmc2dwell"></div>
-    </div>
+
+
   </div>
 
   <!-- Quick messages -->
   <div class="qm-section-title" id="qmMsgLabel">Hazır Mesajlar</div>
-  <div class="qm-msgs" id="qmMsgsList">
-    <div class="qm-msg" data-idx="0"><span class="qmm-icon">🆘</span><span class="qmm-text">Yardıma ihtiyacım var, lütfen gel.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="1"><span class="qmm-icon">😊</span><span class="qmm-text">İyiyim, merak etme.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="2"><span class="qmm-icon">🍽️</span><span class="qmm-text">Açım, yemek getirir misin?</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="3"><span class="qmm-icon">💊</span><span class="qmm-text">İlaç zamanım geldi.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="4"><span class="qmm-icon">🚿</span><span class="qmm-text">Banyoya gitmem lazım.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="5"><span class="qmm-icon">😴</span><span class="qmm-text">Uyumak istiyorum.</span><div class="qm-dwell"></div></div>
+  <div class="qm-msgs" id="qmMsgsList"></div>
+
+  <!-- Add new message -->
+  <div id="qmAddRow" style="display:flex;gap:8px;margin-top:10px;max-width:540px;align-self:center;width:100%;">
+    <input id="qmNewIcon" type="text" maxlength="2" placeholder="😀" style="width:52px;text-align:center;font-size:20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 4px;">
+    <input id="qmNewText" type="text" maxlength="80" placeholder="Yeni mesaj yaz…" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 12px;font-size:14px;">
+    <button class="btn-s" onclick="qmAddMessage()" style="padding:8px 14px;">➕</button>
   </div>
 
   <!-- Edit contacts button -->
-  <button class="btn-s" style="margin-top:16px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
+  <button class="btn-s" style="margin-top:10px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
 </div>
 
 <!-- PHRASE BOARD -->
 <div id="phraseBoard">
   <div class="pb-hdr">
-    <b>💬 What do you want to say?</b>
-    <button class="btn-s" id="pbCloseBtn">✕ Close</button>
+    <b id="pbTitle">💬 What do you want to say?</b>
   </div>
   <div class="pb-grid" id="pbGrid"></div>
 </div>
@@ -2058,7 +733,7 @@ const I18N = {
     heroTitle:'Gözlerinle <em>Konuş</em>',
     heroSub:'Göz izleme teknolojisi ile ellerin olmadan iletişim kur, yaz, seç.',
     privacyText:'🔒 <b>Gizlilik önce gelir</b> — Hiçbir görüntü veya kişisel veri sunucuya gönderilmez.',
-    btnStart:'👁 Kalibrasyona Başla',btnSaved:'▶ Kaydedilmiş Kalibrasyon',btnHow:'📖 Nasıl Kullanılır',
+    btnStart:'👁 Kalibrasyona Başla',btnSaved:'▶ Kaydedilmiş Kalibrasyon',btnHow:'📖 Nasıl Kullanılır',btnDirect:'☝ Direkt Giriş',
     savedCal:'💾 Kalibrasyon: ',
     btnPhrase:'Cümle Kartları',btnKeyboard:'Klavye',btnVision:'Etrafımda Ne Var?',
     btnQuickMsg:'Hızlı Mesaj',btnA11y:'Erişilebilirlik',btnCalib:'Kalibrasyon',btnPanic:'PANİK',
@@ -2080,7 +755,7 @@ const I18N = {
     mainSub:'Bakıp bekleyin',menuLabel:'MENÜ',menuHint:'Bakıp bekle',
     smoothing:'Yumuşatma',dwell:'Bekleme',
     locTitle:'KONUMUNUZ',locLoading:'Alınıyor…',locDenied:'İzin verilmedi',locError:'Konum alınamadı',
-    backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
+    pbTitle:'💬 Ne söylemek istiyorsunuz?',backToStart:'⬅ Başlangıç',backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
     calibStart:'Kalibrasyon başlıyor. Ekrandaki her noktaya bakın.',
     calibLook:'Noktaya bakın…',calibHold:'Sakin tutun…',calibCollect:'Veri toplanıyor…',
     calibDone:'Kalibrasyon tamamlandı.',calibCancelled:'Kalibrasyon iptal edildi.',calibLoaded:'Kalibrasyon yüklendi.',
@@ -2116,19 +791,24 @@ const I18N = {
     calibSaved:'Ekran boyutu kaydedildi.',
     voiceListening:'Dinleniyor…',voiceSpeak:'Şimdi konuşun',voiceGot:'✓ Anlaşıldı',
     voiceNotUnderstood:'⚠ Anlaşılamadı',voiceTryAgain:'Tekrar deneyin',
+    calibReadyLabel:'Kalibrasyon Hazır',
+    loadingCameraLabel:'⏳ Kamera yükleniyor…',
     howTitle:'📖 EyeSense Nasıl Kullanılır',
     howClose:'✕ Kapat',howDone:'✓ Anladım — Başla!',
     how:[
-      {t:'Giriş modunu seçin',d:'Başlangıç ekranında <b>Göz İzleme</b>, <b>Dokunmatik</b> veya <b>Her İkisi</b> seçeneklerinden birini seçin. Göz izleme kalibrasyon gerektirir.',tag:'👁 Göz · ☝️ Dokunmatik · 🤝 Her İkisi',c:'blue'},
-      {t:'Kalibrasyon (Göz izleme için)',d:'17 nokta sırayla ekranda belirecek. Her noktayı dolana kadar sabit bakın. Yaklaşık 45 saniye sürer.',tag:'🎯 ~45 saniye · 17 nokta',c:''},
-      {t:'Bakıp bekle ile seç',d:'Bir butona bakın ve gözünüzü sabit tutun. Sarı çubuk dolunca seçim yapılır. Bekleme süresi ayarlanabilir (varsayılan 1.2s).',tag:'⏱ Bakın + bekleyin = seçin',c:''},
+      {t:'Giriş modunu seçin',d:'Başlangıç ekranında <b>Kalibrasyona Başla</b> (göz izleme) veya <b>Direkt Giriş</b> (dokunmatik mod) seçeneklerinden birini seçin. Kayıtlı kalibrasyon varsa <b>Kayıtlı Kalibrasyon</b> ile devam edebilirsiniz.',tag:'👁 Göz · ☝️ Dokunmatik · 💾 Kayıtlı',c:'blue'},
+      {t:'Kalibrasyon (Göz izleme için)',d:'17 nokta sırayla ekranda belirecek. Her noktayı dolana kadar sabit bakın. Yaklaşık 45 saniye sürer. Kalibrasyon verisi cihazda saklanır.',tag:'🎯 ~45 saniye · 17 nokta',c:''},
+      {t:'Bakıp bekle ile seç',d:'Bir butona bakın ve gözünüzü sabit tutun. Sarı çubuk dolunca seçim yapılır. Bekleme süresi Erişilebilirlik ayarlarından değiştirilebilir (varsayılan 1.2s).',tag:'⏱ Bakın + bekleyin = seçin',c:''},
       {t:'Tek göz kırpma = hızlı seç',d:'Erişilebilirlik ayarlarından <b>Tek Blink Seç</b>\'i etkinleştirin. %8+ dwell varken tek blink ile anında seçim yapabilirsiniz.',tag:'😉 Blink = seç (isteğe bağlı)',c:''},
-      {t:'Çift göz kırpma = geri dön',d:'480ms içinde iki kez göz kırparak mevcut paneli kapatın ve bir önceki ekrana dönün. Her yerde çalışır.',tag:'😉😉 Çift blink = geri',c:''},
-      {t:'Iris ile kaydırma',d:'Panel açıkken gözünüzü <b>üst veya alt kenara</b> getirin. Kenar bölgesine ne kadar girerseniz o kadar hızlı kayar.',tag:'↕ Üst/alt kenar = kaydır',c:'green'},
-      {t:'Cümle Kartları',d:'Bir kart üzerinde bakıp bekleyerek sesli okutun. + ile kendi cümlelerinizi emoji ile ekleyin.',tag:'💬 Bak → bekle → seslendir',c:'blue'},
-      {t:'Klavye',d:'Her tuşa bakıp bekleyerek yazın. Üstteki kelime önerilerine bakıp bekleyin. 🔊 sesli okuma, 🎤 sesle yazma.',tag:'⌨️ Bak-yaz · öneriler · TTS',c:'blue'},
-      {t:'Otomatik öğrenme',d:'Her seçimde sistem sessizce göz modelinizi geliştirir. 8 yeni etkileşimden sonra model güncellenir.',tag:'🔄 Kullandıkça gelişir',c:'green'},
-      {t:'En iyi doğruluk için ipuçları',d:'• Ekrandan 40–55 cm uzakta oturun · • Yüzünüze iyi ışık gelsin · • Başınızı sabit tutun · • Cihaz değiştirince yeniden kalibre edin',tag:'💡 Mesafe · Işık · Sabitlik',c:''},
+      {t:'Çift göz kırpma = geri dön',d:'480ms içinde iki kez göz kırparak mevcut paneli kapatın ve bir önceki ekrana dönün. Her yerde çalışır — ayar gerekmez.',tag:'😉😉 Çift blink = geri',c:''},
+      {t:'Iris ile kaydırma',d:'Panel açıkken gözünüzü <b>üst veya alt kenara</b> getirin. Kenar bölgesine ne kadar girerseniz o kadar hızlı kayar. Cümle Kartları, Erişilebilirlik, Akıllı Ev panellerinde çalışır.',tag:'↕ Üst/alt kenar = kaydır',c:'green'},
+      {t:'Cümle Kartları',d:'Bir kart üzerinde bakıp bekleyerek sesli okutun. <b>+</b> butonuna bakarak kendi cümlelerinizi emoji ile ekleyin veya düzenleyin.',tag:'💬 Bak → bekle → seslendir',c:'blue'},
+      {t:'Klavye',d:'Her tuşa bakıp bekleyerek yazın. Üstteki kelime önerilerine bakıp bekleyin. <b>🔊</b> ile sesli okuma, <b>🎤</b> ile sesle yazma yapabilirsiniz.',tag:'⌨️ Bak-yaz · öneriler · TTS',c:'blue'},
+      {t:'Etrafımda Ne Var?',d:'Kamera ile çevrenizi taratın — yapay zeka ne gördüğünü sesli olarak açıklar. API anahtarı girilirse görsel analiz, girilmezse OCR (metin okuma) modu çalışır.',tag:'👁 Tara → Yapay Zeka açıklar',c:''},
+      {t:'Hızlı Mesaj',d:'Kayıtlı kişileri arayın veya hazır mesajları gönderin. Bakıp bekleyerek 📞 veya 💬 seçin. Kişileri "Kişileri Düzenle" ile özelleştirebilirsiniz.',tag:'📲 Ara · Mesaj Gönder',c:''},
+      {t:'Akıllı Ev (Smart Home)',d:'Cihazlara (ışık, perde, termostat vb.) bakıp bekleyerek açıp kapatın. Demo modda tamamen çalışır; gerçek cihaz için MQTT veya REST API bağlantısı gerekir.',tag:'🏠 Bakıp bekle = kontrol et',c:''},
+      {t:'Panik Butonu',d:'Ana menünün sağ üstündeki kırmızı butona bakıp bekleyin. Refakatçiye konumunuzu içeren acil bildirim gönderilir.',tag:'🆘 Uzun bak = acil bildirim',c:''},
+      {t:'En iyi doğruluk için ipuçları',d:'• Ekrandan 40–55 cm uzakta oturun · • Yüzünüze iyi ışık gelsin · • Başınızı sabit tutun · • Cihaz değiştirince yeniden kalibre edin · • Erişilebilirlik → Doğruluk Testi ile hata ölçün',tag:'💡 Mesafe · Işık · Sabitlik',c:''},
     ]
   },
   en:{
@@ -2136,7 +816,7 @@ const I18N = {
     heroTitle:'<em>Speak</em> With Your Eyes',
     heroSub:'Communicate, type and select hands-free with eye-tracking technology.',
     privacyText:'🔒 <b>Privacy first</b> — No images or personal data ever sent to any server.',
-    btnStart:'👁 Start Calibration',btnSaved:'▶ Use Saved Calibration',btnHow:'📖 How to Use',
+    btnStart:'👁 Start Calibration',btnSaved:'▶ Use Saved Calibration',btnHow:'📖 How to Use',btnDirect:'☝ Direct Entry',
     savedCal:'💾 Calibration: ',
     btnPhrase:'Phrase Board',btnKeyboard:'Keyboard',btnVision:"What's Around Me?",
     btnQuickMsg:'Quick Message',btnA11y:'Accessibility',btnCalib:'Calibrate',btnPanic:'PANIC',
@@ -2158,7 +838,7 @@ const I18N = {
     mainSub:'Gaze & hold to select',menuLabel:'MENU',menuHint:'Gaze & hold',
     smoothing:'Smoothing',dwell:'Dwell',
     locTitle:'YOUR LOCATION',locLoading:'Getting location…',locDenied:'Permission denied',locError:'Could not get location',
-    backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
+    pbTitle:'💬 What do you want to say?',backToStart:'⬅ Start',backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
     calibStart:'Calibration starting. Look at each dot on screen.',
     calibLook:'Look at the dot…',calibHold:'Hold still…',calibCollect:'Collecting data…',
     calibDone:'Calibration complete.',calibCancelled:'Calibration cancelled.',calibLoaded:'Calibration loaded.',
@@ -2194,19 +874,24 @@ const I18N = {
     calibSaved:'Screen size saved.',
     voiceListening:'Listening…',voiceSpeak:'Speak now',voiceGot:'✓ Got it',
     voiceNotUnderstood:'⚠ Not understood',voiceTryAgain:'Please try again',
+    calibReadyLabel:'Calibration Ready',
+    loadingCameraLabel:'⏳ Loading camera…',
     howTitle:'📖 How to Use EyeSense',
     howClose:'✕ Close',howDone:'✓ Got it — Start!',
     how:[
-      {t:'Choose your input mode',d:'On the start screen, pick <b>Eye Gaze</b> for hands-free use, <b>Touch</b> for finger control, or <b>Both</b>.',tag:'👁 Eye · ☝️ Touch · 🤝 Both',c:'blue'},
-      {t:'Calibrate (Eye Gaze only)',d:'17 dots appear one by one. Look steadily at each until the ring fills. Takes ~45 seconds.',tag:'🎯 ~45 seconds · 17 points',c:''},
-      {t:'Dwell to select',d:'Look at any button and hold your gaze. A yellow bar fills — when full the item is selected. Dwell time is adjustable.',tag:'⏱ Gaze + hold = select',c:''},
-      {t:'Single blink = quick select',d:'Enable <b>Single Blink Select</b> in Accessibility. With 8%+ dwell, a single blink instantly selects.',tag:'😉 Blink = select (optional)',c:''},
-      {t:'Double blink = go back',d:'Blink twice within 480ms to close the current panel. Works everywhere.',tag:'😉😉 Double blink = back',c:''},
-      {t:'Iris scroll inside panels',d:'With a panel open, move your gaze to the <b>top or bottom edge</b> to scroll.',tag:'↕ Top/bottom edge = scroll',c:'green'},
-      {t:'Phrase Board',d:'Dwell on a phrase card to speak it aloud. Tap + to add your own phrases.',tag:'💬 Gaze → dwell → speaks',c:'blue'},
-      {t:'Keyboard',d:'Dwell on each key to type. Dwell on word suggestions to complete. Press 🔊 to read aloud, 🎤 for voice input.',tag:'⌨️ Dwell-type · suggestions · TTS',c:'blue'},
-      {t:'Online learning',d:'Every dwell-selection silently refines your gaze model. After 8 interactions a model update runs.',tag:'🔄 Auto-improves with use',c:'green'},
-      {t:'Tips for best accuracy',d:'• Sit 40–55 cm from screen · • Good face lighting · • Keep head still · • Recalibrate when changing device',tag:'💡 Distance · Light · Stillness',c:''},
+      {t:'Choose your input mode',d:'On the start screen, tap <b>Start Calibration</b> for eye gaze, or <b>Direct Entry</b> to skip to touch mode. If you have a saved calibration, use <b>Use Saved Calibration</b> to continue.',tag:'👁 Eye · ☝️ Touch · 💾 Saved',c:'blue'},
+      {t:'Calibrate (Eye Gaze only)',d:'17 dots appear one by one. Look steadily at each until the ring fills. Takes ~45 seconds. Calibration data is saved on your device.',tag:'🎯 ~45 seconds · 17 points',c:''},
+      {t:'Dwell to select',d:'Look at any button and hold your gaze. A yellow bar fills — when full the item is selected. Dwell duration is adjustable in Accessibility settings (default 1.2s).',tag:'⏱ Gaze + hold = select',c:''},
+      {t:'Single blink = quick select',d:'Enable <b>Single Blink Select</b> in Accessibility. With 8%+ dwell on an item, a single blink instantly selects it.',tag:'😉 Blink = select (optional)',c:''},
+      {t:'Double blink = go back',d:'Blink twice within 480ms to close the current panel and return. Works everywhere — no settings needed.',tag:'😉😉 Double blink = back',c:''},
+      {t:'Iris scroll inside panels',d:'With a panel open, move your gaze to the <b>top or bottom edge</b> to scroll. The deeper into the edge zone, the faster it scrolls. Works in Phrase Board, Accessibility and Smart Home panels.',tag:'↕ Top/bottom edge = scroll',c:'green'},
+      {t:'Phrase Board',d:'Dwell on a phrase card to speak it aloud. Dwell on the <b>+</b> button to add your own phrases with a custom emoji.',tag:'💬 Gaze → dwell → speaks',c:'blue'},
+      {t:'Keyboard',d:'Dwell on each key to type. Dwell on word suggestions at the top to autocomplete. Press <b>🔊</b> to read aloud, <b>🎤</b> for voice dictation.',tag:'⌨️ Dwell-type · suggestions · TTS',c:'blue'},
+      {t:"What's Around Me?",d:'Point your camera at your surroundings — AI describes what it sees aloud. With an API key: full visual analysis. Without: OCR text-reading mode.',tag:'👁 Scan → AI describes',c:''},
+      {t:'Quick Message',d:'Call saved contacts or send preset messages. Dwell on 📞 or 💬 to act. Customize contacts via "Edit Contacts".',tag:'📲 Call · Message',c:''},
+      {t:'Smart Home',d:'Turn devices on/off (lights, blinds, thermostat, etc.) by dwelling on their card. Fully functional in demo mode; real devices require MQTT or REST API.',tag:'🏠 Dwell = toggle device',c:''},
+      {t:'Panic Button',d:'Dwell on the red button in the top-right of the main menu. An emergency alert with your location is sent to your caregiver.',tag:'🆘 Long gaze = emergency alert',c:''},
+      {t:'Tips for best accuracy',d:'• Sit 40–55 cm from screen · • Good face lighting · • Keep head still · • Recalibrate when changing device · • Use Accessibility → Accuracy Test to check your error',tag:'💡 Distance · Light · Stillness',c:''},
     ]
   }
 };
@@ -2229,6 +914,7 @@ function applyI18n(){
   if(el('startPrivacy')) el('startPrivacy').innerHTML=t('privacyText');
   if(el('startFreshBtn')) el('startFreshBtn').textContent=t('btnStart');
   if(el('howBtn')) el('howBtn').textContent=t('btnHow');
+  if(el('directEntryBtn')) el('directEntryBtn').textContent=t('btnDirect');
   if(el('useSavedBtn')&&el('useSavedBtn').style.display!=='none') el('useSavedBtn').textContent=t('btnSaved');
   // Main menu grid labels
   const btnKeys={phraseBtn:'btnPhrase',keyboardBtn:'btnKeyboard',visionBtn:'btnVision',
@@ -2240,8 +926,8 @@ function applyI18n(){
   // Panic label
   const pl=el('panicLabel'); if(pl) pl.textContent=t('btnPanic');
   // Main header
-  const mhs=el('mainMenuSubLabel'); if(mhs) mhs.textContent=t('menuLabel');
-  const mhh=el('mainMenuSubHint'); if(mhh) mhh.textContent=t('menuHint');
+  const mhs=el('mainSectionLabel'); if(mhs) mhs.textContent=t('menuLabel');
+  const mhh=el('mainSectionHint'); if(mhh) mhh.textContent=t('menuHint');
   // Sliders
   const smL=el('smLabel'); if(smL) smL.textContent=t('smoothing');
   const dwL=el('dwLabel'); if(dwL) dwL.textContent=t('dwell');
@@ -2251,6 +937,10 @@ function applyI18n(){
     const btnTxt=el('backBtnText'); if(btnTxt) btnTxt.textContent=t('backBtn');
     const hint=gpb.querySelector('.pb-hint'); if(hint) hint.textContent=t('backHint');
   }
+  // Phrase board title
+  const pbt=el('pbTitle'); if(pbt) pbt.textContent=t('pbTitle');
+  // Back to start button
+  const btsb=el('backToStartBtn'); if(btsb) btsb.textContent=t('backToStart');
   // Location widget
   const locT=el('locTitle'); if(locT) locT.textContent=t('locTitle');
   // Calib / Eval UI
@@ -2309,6 +999,17 @@ function applyI18n(){
   if(el('wakeWordLabel'))    el('wakeWordLabel').textContent=wakeWordActive?t('wakeOn'):t('wakeOff');
   // Quick msg panel
   if($('quickMsgPanel')&&$('quickMsgPanel').style.display==='flex') applyQmI18n();
+  // savedInfo calib-ready badge — update text when language changes
+  const si=el('savedInfo');
+  if(si && si.style.display==='block'){
+    const badge=si.querySelector('.calib-ready-badge');
+    if(badge){
+      const dot=badge.querySelector('.cr-dot');
+      badge.innerHTML='';
+      if(dot) badge.appendChild(dot);
+      badge.appendChild(document.createTextNode(t('calibReadyLabel')));
+    }
+  }
   // How panel — rebuild dynamically
   rebuildHowPanel();
   // Keyboard
@@ -2497,6 +1198,7 @@ function setInputMode(m){
   const map={eye:'Eye',finger:'Finger',both:'Both',dwellonly:'Dwell'};
   const btn=$('mode'+map[m]); if(btn) btn.classList.add('active');
   if(m==='finger'||m==='both') enableTouchInput(); else disableTouchInput();
+  if(mainUI&&mainUI.style.display==='flex') dot.style.display=(m==='eye'||m==='both')?'block':'none';
 }
 let touchInputEnabled=false;
 function enableTouchInput(){
@@ -2553,7 +1255,7 @@ function dispatchGaze(gx,gy,dt){
   if($('kbPanel').style.display==='flex') updateKbDwells(gx,gy,Math.min(dt,80));
   if($('iotPanel').style.display==='flex') updateIotDwells(gx,gy,Math.min(dt,80));
   if(mainUI.style.display==='flex') updateMainMenuDwells(gx,gy,Math.min(dt,80));
-  if(mainUI.style.display==='flex') updatePanicDwell(gx,gy,Math.min(dt,80));
+
   updateGazeBack(gx,gy,Math.min(dt,80));
   updateGlobalPanelBack(gx,gy,Math.min(dt,80));
   if($('visionPanel').style.display==='flex') updateVisionDwells(gx,gy,Math.min(dt,80));
@@ -2708,20 +1410,87 @@ function closeArch(){ $('archPanel').style.display='none'; popPage(); }
 // ══════════════════════════════════════════════════════
 // QUICK MSG
 // ══════════════════════════════════════════════════════
-const QM_STORAGE_KEY = 'es_qm_contacts';
+const QM_STORAGE_KEY     = 'es_qm_contacts';
+const QM_MSG_STORAGE_KEY = 'es_qm_messages';
+
 const QM_DEFAULT_CONTACTS = [
   {name:'Kişi 1', role:'Refakatçi', avatar:'👤', phone:''},
-  {name:'Kişi 2', role:'Aile',      avatar:'👤', phone:''},
-  {name:'Acil Servis', role:'Acil durum', avatar:'🏥', phone:'112'},
 ];
 let qmContacts = JSON.parse(localStorage.getItem(QM_STORAGE_KEY)||'null') || QM_DEFAULT_CONTACTS;
+
+const QM_DEFAULT_MESSAGES_TR = [
+  {i:'🆘', t:'Yardıma ihtiyacım var, lütfen gel.'},
+  {i:'😊', t:'İyiyim, merak etme.'},
+  {i:'🍽️', t:'Açım, yemek getirir misin?'},
+  {i:'💊', t:'İlaç zamanım geldi.'},
+  {i:'🚿', t:'Banyoya gitmem lazım.'},
+  {i:'😴', t:'Uyumak istiyorum.'},
+];
+const QM_DEFAULT_MESSAGES_EN = [
+  {i:'🆘', t:'I need help, please come.'},
+  {i:'😊', t:"I'm fine, don't worry."},
+  {i:'🍽️', t:"I'm hungry, can you bring food?"},
+  {i:'💊', t:"It's time for my medication."},
+  {i:'🚿', t:'I need to use the bathroom.'},
+  {i:'😴', t:'I want to sleep.'},
+];
+
+let qmMessages = JSON.parse(localStorage.getItem(QM_MSG_STORAGE_KEY)||'null') || null;
+
+function getQmMessages(){
+  if(qmMessages) return qmMessages;
+  return appLang==='en' ? QM_DEFAULT_MESSAGES_EN : QM_DEFAULT_MESSAGES_TR;
+}
+
+function saveQmMessages(msgs){
+  qmMessages = msgs;
+  localStorage.setItem(QM_MSG_STORAGE_KEY, JSON.stringify(msgs));
+}
+
+function renderQmMsgs(){
+  const list = $('qmMsgsList');
+  if(!list) return;
+  const msgs = getQmMessages();
+  list.innerHTML = '';
+  msgs.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.className = 'qm-msg';
+    div.dataset.idx = i;
+    div.innerHTML = '<span class="qmm-icon">'+m.i+'</span><span class="qmm-text">'+m.t+'</span><button class="qmm-del" onclick="qmDeleteMessage('+i+')" title="Sil" style="margin-left:auto;background:none;border:none;color:rgba(255,80,80,0.7);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;">✕</button><div class="qm-dwell"></div>';
+    list.appendChild(div);
+  });
+  // placeholder'ı dile göre güncelle
+  const inp = $('qmNewText');
+  if(inp) inp.placeholder = appLang==='en' ? 'Type new message…' : 'Yeni mesaj yaz…';
+  bindQmDwells();
+}
+
+function qmAddMessage(){
+  const iconEl = $('qmNewIcon');
+  const textEl = $('qmNewText');
+  const icon = (iconEl.value.trim()) || '💬';
+  const text = textEl.value.trim();
+  if(!text){ showBlinkFlash(appLang==='en'?'Enter a message':'Mesaj girin'); return; }
+  const msgs = getQmMessages().slice();
+  msgs.push({i:icon, t:text});
+  saveQmMessages(msgs);
+  iconEl.value=''; textEl.value='';
+  renderQmMsgs();
+}
+
+function qmDeleteMessage(idx){
+  const msgs = getQmMessages().slice();
+  msgs.splice(idx, 1);
+  saveQmMessages(msgs);
+  renderQmMsgs();
+}
 
 function openQuickMsg(){
   $('quickMsgPanel').style.display='flex';
   pushPage('quickMsgPanel');
   renderQmContacts();
   applyQmI18n();
-  bindQmDwells();
+  renderQmMsgs();
 }
 function closeQuickMsg(){
   $('quickMsgPanel').style.display='none';
@@ -2742,24 +1511,10 @@ function applyQmI18n(){
     if($('qmTitle')) $('qmTitle').textContent='📲 Quick Message';
     if($('qmMsgLabel')) $('qmMsgLabel').textContent='Quick Messages';
     if($('qmEditLabel')) $('qmEditLabel').textContent='Edit Contacts';
-    // English quick messages
-    const msgs=[
-      {i:'🆘',t:"I need help, please come."},
-      {i:'😊',t:"I'm fine, don't worry."},
-      {i:'🍽️',t:"I'm hungry, can you bring food?"},
-      {i:'💊',t:"It's time for my medication."},
-      {i:'🚿',t:"I need to use the bathroom."},
-      {i:'😴',t:"I want to sleep."},
-    ];
-    const list=$('qmMsgsList');
-    if(list) list.querySelectorAll('.qm-msg').forEach((el,i)=>{
-      if(msgs[i]){ el.querySelector('.qmm-icon').textContent=msgs[i].i; el.querySelector('.qmm-text').textContent=msgs[i].t; }
-    });
+    // Mesajlar renderQmMsgs() tarafından yönetilir
     // Contact roles
-    const defaultRoles=['Caregiver','Family','Emergency'];
-    QM_DEFAULT_CONTACTS.forEach((_,i)=>{
-      const re=document.getElementById('qmc'+i+'role'); if(re&&re.textContent===(['Refakatçi','Aile','Acil durum'][i])) re.textContent=defaultRoles[i];
-    });
+    const re0=document.getElementById('qmc0role');
+    if(re0&&re0.textContent==='Refakatçi') re0.textContent='Caregiver';
   } else {
     if($('qmTitle')) $('qmTitle').textContent='📲 Hızlı Mesaj';
     if($('qmMsgLabel')) $('qmMsgLabel').textContent='Hazır Mesajlar';
@@ -2797,10 +1552,21 @@ async function qmSendMsg(text, contactIdx=0){
   showBlinkFlash('💬 '+text.slice(0,40)+(text.length>40?'…':''));
 
   // 2. Konum bilgisi (varsa)
-  let location = null;
-  if(typeof lastLocation !== 'undefined' && lastLocation){
-    location = { lat: lastLocation.latitude, lng: lastLocation.longitude};
-  }
+ let location = null;
+if(typeof lastLocation !== 'undefined' && lastLocation){
+  location = { lat: lastLocation.lat, lng: lastLocation.lng };
+} else {
+  await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+        pos=>{ lastLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        location = { lat: lastLocation.lat, lng: lastLocation.lng };
+        resolve();
+      },
+      () => resolve(),
+      { timeout: 5000, maximumAge: 30000 }
+    );
+  });
+}
 
   const contact = (typeof qmContacts !== 'undefined' && qmContacts[contactIdx])
     ? qmContacts[contactIdx]
@@ -2862,12 +1628,9 @@ async function qmSendMsg(text, contactIdx=0){
   closeQuickMsg();
 }
 function openQmEdit(){
-  const name0=prompt(appLang==='tr'?'1. kişi adı:':'Contact 1 name:', qmContacts[0].name); if(!name0) return;
-  const phone0=prompt(appLang==='tr'?'1. kişi tel (ör: +905..):':'Contact 1 phone:', qmContacts[0].phone||'');
-  const name1=prompt(appLang==='tr'?'2. kişi adı:':'Contact 2 name:', qmContacts[1].name); if(!name1) return;
-  const phone1=prompt(appLang==='tr'?'2. kişi tel:':'Contact 2 phone:', qmContacts[1].phone||'');
+  const name0=prompt(appLang==='tr'?'Refakatçi adı:':'Caregiver name:', qmContacts[0].name); if(!name0) return;
+  const phone0=prompt(appLang==='tr'?'Telefon (ör: +905..):':'Phone:', qmContacts[0].phone||'');
   qmContacts[0]={...qmContacts[0], name:name0, phone:phone0};
-  qmContacts[1]={...qmContacts[1], name:name1, phone:phone1};
   localStorage.setItem(QM_STORAGE_KEY, JSON.stringify(qmContacts));
   renderQmContacts();
 }
@@ -6304,7 +5067,6 @@ $('dwellSlider').oninput=e=>{DWELL_MS=e.target.value*100;$('dwellVal').textConte
 $('recalibBtn').onclick=startCalibration;
 $('evalBtn')&&($('evalBtn').onclick=startEvaluation);
 $('phraseBtn').onclick=openPhraseBoard;
-$('pbCloseBtn').onclick=closePhraseBoard;
 $('outputClose').onclick=()=>{output.style.display='none';};
 $('repDoneBtn').onclick=showMainMode;
 $('repRecalBtn').onclick=startCalibration;
@@ -6327,8 +5089,21 @@ faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:0
 // [see source for notes]
 // ══════════════════════════════════════════════════════
 function hideAllScreens(){ [startScreen,calibScreen,evalScreen,reportScreen].forEach(s=>s.classList.add('hidden')); }
+function directEntry(){
+  setInputMode('finger');
+  showMainMode();
+  speak(appLang==='tr' ? 'Dokunmatik modda girildi.' : 'Entered in touch mode.');
+}
+function backToStart(){
+  if(typeof stopCamera === 'function') stopCamera();
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('startScreen').classList.remove('hidden');
+  speak(appLang==='tr' ? 'Başlangıç ekranı.' : 'Start screen.');
+}
 function showMainMode(){
-  hideAllScreens();dot.style.display='block';mainUI.style.display='flex';
+  hideAllScreens();
+  dot.style.display=(inputMode==='eye'||inputMode==='both')?'block':'none';
+  mainUI.style.display='flex';
   setTheme(currentTheme);statusBar.style.display='block';irisQ.style.display='block';dwellRing.style.display='block';
   mainDwells=[];
   updateGazeBackVisibility();
@@ -6346,7 +5121,7 @@ function startLocationTracking(){
   setLocVal(t('locLoading'));
   if(locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
   locationWatchId=navigator.geolocation.watchPosition(
-    pos=>{ lastLocation=pos.coords; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
+    pos=>{ lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy}; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
     err=>{ const c=JSON.parse(localStorage.getItem('es_loc')||'null'); if(c){setLocVal(c.d);}else{setLocVal(err.code===1?t('locDenied'):t('locError'));} },
     {enableHighAccuracy:false,maximumAge:60000,timeout:12000}
   );
@@ -6367,33 +5142,12 @@ function setLocVal(v){ const el=document.getElementById('locValue'); if(el) el.t
 // ── PANIC BUTTON ──────────────────────────────────────
 let panicArmed=false, panicElapsed=0;
 function triggerPanic(){
-  if(panicArmed) return;
-  panicArmed=true;
-  const btn=document.getElementById('panicBtn');
-  if(btn){ btn.style.background='rgba(220,38,38,0.45)'; btn.style.borderColor='#ff2222'; }
-  speak(t('sosAudio'));
-  const f=document.getElementById('blinkFlash');
-  if(f){ f.textContent=t('sosSending'); f.style.display='block'; }
-  const sos={timestamp:new Date().toISOString(),location:lastLocation?{lat:lastLocation.latitude,lon:lastLocation.longitude}:null,lang:appLang};
-  console.log('[EyeSense SOS]',sos);
-  setTimeout(()=>{
-    if(f){ f.textContent=t('sosSent'); }
-    setTimeout(()=>{ if(f) f.style.display='none'; },3500);
-    if(btn){ btn.style.background=''; btn.style.borderColor=''; }
-    panicArmed=false; panicElapsed=0;
-  },3000);
+  const msg = appLang==='tr'
+    ? 'Yardıma ihtiyacım var, lütfen gel.'
+    : 'I need help, please come.';
+  qmSendMsg(msg, 0);
 }
-function updatePanicDwell(gx,gy,dt){
-  if(mainUI.style.display!=='flex') return;
-  const btn=document.getElementById('panicBtn'); if(!btn) return;
-  const r=btn.getBoundingClientRect();
-  const inside=gx>=r.left&&gx<=r.right&&gy>=r.top&&gy<=r.bottom;
-  if(inside){panicElapsed+=dt;btn.classList.add('gazing');}
-  else{panicElapsed=Math.max(0,panicElapsed-dt*2);btn.classList.remove('gazing');}
-  const pct=Math.min(1,panicElapsed/(DWELL_MS*2));
-  const dw=document.getElementById('panicDwell'); if(dw) dw.style.width=(pct*100)+'%';
-  if(pct>=1){panicElapsed=0;if(dw)dw.style.width='0%';triggerPanic();}
-}
+function updatePanicDwell(){}
 
 function initStart(){
   setTheme(currentTheme); setInputMode(inputMode);
@@ -6406,11 +5160,18 @@ function initStart(){
   const ok=loadCalibration();
   if(ok){
     $('savedInfo').style.display='block';
-    const d=localStorage.getItem('es_date');
-    $('savedInfo').innerHTML=`<b>${t('savedCal')}</b>${d||''}`;
+    $('savedInfo').innerHTML='<span class="calib-ready-badge"><span class="cr-dot"></span>' + t('calibReadyLabel') + '</span>';
     $('useSavedBtn').style.display='block';
+    $('useSavedBtn').disabled=false;
   }
-  $('startFreshBtn').onclick=()=>{modelX=null;modelY=null;startCalibration();};
+  $('startFreshBtn').onclick=()=>{
+    modelX=null;modelY=null;
+    if(!cameraReady){
+      main().then(()=>{ if(cameraReady) startCalibration(); });
+    } else {
+      startCalibration();
+    }
+  };
   $('useSavedBtn').onclick=()=>{if(loadCalibration()){speak(t('calibLoaded'));showMainMode();}};
 }
 
@@ -6432,7 +5193,7 @@ let cameraReady = false;
 
 async function main(){
   // [see source for notes]
-  $('startFreshBtn').textContent = '⏳ Loading camera…';
+  $('startFreshBtn').textContent = appLang === 'tr' ? '⏳ Kamera yükleniyor…' : '⏳ Loading camera…';
   $('startFreshBtn').disabled = true;
 
   try {
@@ -6473,9 +5234,8 @@ async function main(){
     });
 
     cameraReady = true;
-    $('startFreshBtn').textContent = '▶ Start Calibration';
+    $('startFreshBtn').textContent = '👁 Kalibrasyona Başla';
     $('startFreshBtn').disabled = false;
-    initStart();
 
   } catch(err) {
     $('startFreshBtn').textContent = '▶ Start Calibration';
@@ -6671,7 +5431,7 @@ function toggleIrisScroll(){
 }
 
 
-main();
+initStart();
 </script>
 </body>
 </html>
