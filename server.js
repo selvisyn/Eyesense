@@ -52,6 +52,16 @@ app.post('/api/register-token', async (req, res) => {
 
   try {
     if (db) {
+      // Önce bu contactId'ye ait tüm eski tokenları sil
+      const oldSnap = await db.collection('fcm_tokens')
+        .where('contactId', '==', String(contactId)).get();
+      if (!oldSnap.empty) {
+        const deletes = oldSnap.docs.map(d => d.ref.delete());
+        await Promise.all(deletes);
+        console.log('Eski tokenlar silindi, adet:', oldSnap.size);
+      }
+
+      // Yeni token'ı kaydet
       const docId = String(contactId) + '_' + token.slice(-16);
       console.log('Firestore yaziliyor, docId:', docId);
       await db.collection('fcm_tokens').doc(docId).set({
