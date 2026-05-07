@@ -361,7 +361,11 @@
         <div class="lw-value" id="locValue">Alınıyor…</div>
       </div>
     </div>
-
+    <button id="panicBtn" onclick="triggerPanic()">
+      <span class="pa-icon">🆘</span>
+      <span class="pa-label" id="panicLabel">PANİK</span>
+      <div class="pa-dwell" id="panicDwell"></div>
+    </button>
   </div>
 
   <!-- Scrollable content -->
@@ -548,23 +552,24 @@
 
   <!-- Quick messages -->
   <div class="qm-section-title" id="qmMsgLabel">Hazır Mesajlar</div>
-  <div class="qm-msgs" id="qmMsgsList"></div>
-
-  <!-- Add new message -->
-  <div id="qmAddRow" style="display:flex;gap:8px;margin-top:10px;max-width:540px;align-self:center;width:100%;">
-    <input id="qmNewIcon" type="text" maxlength="2" placeholder="😀" style="width:52px;text-align:center;font-size:20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 4px;">
-    <input id="qmNewText" type="text" maxlength="80" placeholder="Yeni mesaj yaz…" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:8px 12px;font-size:14px;">
-    <button class="btn-s" onclick="qmAddMessage()" style="padding:8px 14px;">➕</button>
+  <div class="qm-msgs" id="qmMsgsList">
+    <div class="qm-msg" data-idx="0"><span class="qmm-icon">🆘</span><span class="qmm-text">Yardıma ihtiyacım var, lütfen gel.</span><div class="qm-dwell"></div></div>
+    <div class="qm-msg" data-idx="1"><span class="qmm-icon">😊</span><span class="qmm-text">İyiyim, merak etme.</span><div class="qm-dwell"></div></div>
+    <div class="qm-msg" data-idx="2"><span class="qmm-icon">🍽️</span><span class="qmm-text">Açım, yemek getirir misin?</span><div class="qm-dwell"></div></div>
+    <div class="qm-msg" data-idx="3"><span class="qmm-icon">💊</span><span class="qmm-text">İlaç zamanım geldi.</span><div class="qm-dwell"></div></div>
+    <div class="qm-msg" data-idx="4"><span class="qmm-icon">🚿</span><span class="qmm-text">Banyoya gitmem lazım.</span><div class="qm-dwell"></div></div>
+    <div class="qm-msg" data-idx="5"><span class="qmm-icon">😴</span><span class="qmm-text">Uyumak istiyorum.</span><div class="qm-dwell"></div></div>
   </div>
 
   <!-- Edit contacts button -->
-  <button class="btn-s" style="margin-top:10px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
+  <button class="btn-s" style="margin-top:16px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
 </div>
 
 <!-- PHRASE BOARD -->
 <div id="phraseBoard">
   <div class="pb-hdr">
-    <b id="pbTitle">💬 What do you want to say?</b>
+    <b>💬 What do you want to say?</b>
+    <button class="btn-s" id="pbCloseBtn">✕ Close</button>
   </div>
   <div class="pb-grid" id="pbGrid"></div>
 </div>
@@ -755,7 +760,7 @@ const I18N = {
     mainSub:'Bakıp bekleyin',menuLabel:'MENÜ',menuHint:'Bakıp bekle',
     smoothing:'Yumuşatma',dwell:'Bekleme',
     locTitle:'KONUMUNUZ',locLoading:'Alınıyor…',locDenied:'İzin verilmedi',locError:'Konum alınamadı',
-    pbTitle:'💬 Ne söylemek istiyorsunuz?',backToStart:'⬅ Başlangıç',backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
+    backBtn:'← Geri',backHint:'👁 Bakıp bekle · 👁👁 Çift göz kırp',
     calibStart:'Kalibrasyon başlıyor. Ekrandaki her noktaya bakın.',
     calibLook:'Noktaya bakın…',calibHold:'Sakin tutun…',calibCollect:'Veri toplanıyor…',
     calibDone:'Kalibrasyon tamamlandı.',calibCancelled:'Kalibrasyon iptal edildi.',calibLoaded:'Kalibrasyon yüklendi.',
@@ -838,7 +843,7 @@ const I18N = {
     mainSub:'Gaze & hold to select',menuLabel:'MENU',menuHint:'Gaze & hold',
     smoothing:'Smoothing',dwell:'Dwell',
     locTitle:'YOUR LOCATION',locLoading:'Getting location…',locDenied:'Permission denied',locError:'Could not get location',
-    pbTitle:'💬 What do you want to say?',backToStart:'⬅ Start',backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
+    backBtn:'← Back',backHint:'👁 Gaze & hold · 👁👁 Double blink',
     calibStart:'Calibration starting. Look at each dot on screen.',
     calibLook:'Look at the dot…',calibHold:'Hold still…',calibCollect:'Collecting data…',
     calibDone:'Calibration complete.',calibCancelled:'Calibration cancelled.',calibLoaded:'Calibration loaded.',
@@ -926,8 +931,8 @@ function applyI18n(){
   // Panic label
   const pl=el('panicLabel'); if(pl) pl.textContent=t('btnPanic');
   // Main header
-  const mhs=el('mainSectionLabel'); if(mhs) mhs.textContent=t('menuLabel');
-  const mhh=el('mainSectionHint'); if(mhh) mhh.textContent=t('menuHint');
+  const mhs=el('mainMenuSubLabel'); if(mhs) mhs.textContent=t('menuLabel');
+  const mhh=el('mainMenuSubHint'); if(mhh) mhh.textContent=t('menuHint');
   // Sliders
   const smL=el('smLabel'); if(smL) smL.textContent=t('smoothing');
   const dwL=el('dwLabel'); if(dwL) dwL.textContent=t('dwell');
@@ -937,10 +942,6 @@ function applyI18n(){
     const btnTxt=el('backBtnText'); if(btnTxt) btnTxt.textContent=t('backBtn');
     const hint=gpb.querySelector('.pb-hint'); if(hint) hint.textContent=t('backHint');
   }
-  // Phrase board title
-  const pbt=el('pbTitle'); if(pbt) pbt.textContent=t('pbTitle');
-  // Back to start button
-  const btsb=el('backToStartBtn'); if(btsb) btsb.textContent=t('backToStart');
   // Location widget
   const locT=el('locTitle'); if(locT) locT.textContent=t('locTitle');
   // Calib / Eval UI
@@ -1198,7 +1199,6 @@ function setInputMode(m){
   const map={eye:'Eye',finger:'Finger',both:'Both',dwellonly:'Dwell'};
   const btn=$('mode'+map[m]); if(btn) btn.classList.add('active');
   if(m==='finger'||m==='both') enableTouchInput(); else disableTouchInput();
-  if(mainUI&&mainUI.style.display==='flex') dot.style.display=(m==='eye'||m==='both')?'block':'none';
 }
 let touchInputEnabled=false;
 function enableTouchInput(){
@@ -1222,91 +1222,45 @@ function onTouchGaze(e){
 }
 function onTouchEnd(){ if(inputMode==='finger') resetAllDwells(); }
 function resetAllDwells(){
-  // EyeSense FIX: tek seçim motoru / arkadaki sekmeleri kilitle
-  // Bir panel açıldığında önce tüm dwell sayaçları sıfırlanır.
-  const resetItem = d => {
-    if(!d) return;
-    d.elapsed = 0;
-    d.dwell = 0;
-    d.fired = false;
-    if(d.el) d.el.classList.remove('gazing');
-    if(d.overlay) d.overlay.style.width = '0%';
-    if(d.ov) d.ov.style.width = '0%';
-  };
-
-  if(typeof phraseDwells !== 'undefined') phraseDwells.forEach(resetItem);
-  if(typeof kbDwells !== 'undefined') kbDwells.forEach(resetItem);
-  if(typeof kbSuggDwells !== 'undefined') kbSuggDwells.forEach(resetItem);
-  if(typeof iotDwells !== 'undefined') iotDwells.forEach(resetItem);
-  if(typeof mainDwells !== 'undefined') mainDwells.forEach(resetItem);
-  if(typeof qmMsgDwells !== 'undefined') qmMsgDwells.forEach(resetItem);
-  if(typeof qmContactDwells !== 'undefined') qmContactDwells.forEach(resetItem);
-  if(typeof visionGazeZoneDwells !== 'undefined') visionGazeZoneDwells.forEach(resetItem);
-
-  document.querySelectorAll('.gazing').forEach(el => el.classList.remove('gazing'));
-  document.querySelectorAll('.btn-dwell,.pb-dwell,.kb-dwell,.iot-dwell,.qm-dwell,.vpb-dwell,.vp-close-dwell,.pb-dwell-bar').forEach(el => {
-    el.style.width = '0%';
-  });
+  phraseDwells.forEach(pd=>{pd.elapsed=0;pd.el.classList.remove('gazing');pd.overlay.style.width='0%';});
+  kbDwells.forEach(kd=>{kd.elapsed=0;kd.el.classList.remove('gazing');kd.overlay.style.width='0%';});
+  iotDwells.forEach(id=>{id.elapsed=0;id.el.classList.remove('gazing');id.overlay.style.width='0%';});
 }
-
 
 // ══════════════════════════════════════════════════════
 // DISPATCH GAZE
 // ══════════════════════════════════════════════════════
-function isAnyPanelOpen(){
-  return (
-    phraseBoard.style.display === 'flex' ||
-    $('kbPanel').style.display === 'flex' ||
-    $('a11yPanel').style.display === 'flex' ||
-    $('visionPanel').style.display === 'flex' ||
-    $('quickMsgPanel').style.display === 'flex' ||
-    $('iotPanel').style.display === 'flex' ||
-    $('howPanel').style.display === 'flex' ||
-    $('diagPanel').style.display === 'flex' ||
-    $('archPanel').style.display === 'flex' ||
-    !reportScreen.classList.contains('hidden')
-  );
-}
-
 function dispatchGaze(gx,gy,dt){
-  // EyeSense FIX: aynı anda sadece en üstteki aktif panel dwell alır.
-  // Arkada kalan mainUI veya başka panel artık kendi kendine seçim yapamaz.
-  const safeDt = Math.min(dt, 80);
-  const panelOpen = isAnyPanelOpen();
+  // Iris scroll: only when a scrollable panel is open
+  const anyPanelOpen = phraseBoard.style.display==='flex'
+    || $('a11yPanel').style.display==='flex'
+    || $('diagPanel').style.display==='flex'
+    || $('archPanel').style.display==='flex'
+    || $('howPanel').style.display==='flex'
+    || $('iotPanel').style.display==='flex'
+    || (!reportScreen.classList.contains('hidden'));
 
-  if(panelOpen){
+  if(anyPanelOpen){
     updateIrisScroll(gx, gy);
   } else {
+    // Hide zones when no panel open
     const t=$('scrollZoneTop'), b=$('scrollZoneBottom');
     if(t) t.classList.remove('visible','active');
     if(b) b.classList.remove('visible','active');
     irisScrollVel = 0;
   }
 
-  if(evalActive && evalDwellTracker){
-    evalDwellTracker.update(gx, gy, performance.now());
-  }
-
-  // Öncelik sırası: açık panel > ana menü.
-  // Burada else-if kullanılması bilinçli: bir frame içinde iki farklı sekme tetiklenemez.
-  if(phraseBoard.style.display === 'flex'){
-    updatePhraseDwells(gx, gy, safeDt);
-  } else if($('kbPanel').style.display === 'flex'){
-    updateKbDwells(gx, gy, safeDt);
-  } else if($('visionPanel').style.display === 'flex'){
-    updateVisionDwells(gx, gy, safeDt);
-  } else if($('quickMsgPanel').style.display === 'flex'){
-    updateQmDwells(gx, gy, safeDt);
-  } else if($('iotPanel').style.display === 'flex'){
-    updateIotDwells(gx, gy, safeDt);
-  } else if(mainUI.style.display === 'flex' && !panelOpen){
-    updateMainMenuDwells(gx, gy, safeDt);
-  }
-
-  updateGazeBack(gx, gy, safeDt);
-  updateGlobalPanelBack(gx, gy, safeDt);
+  if(evalActive&&evalDwellTracker) evalDwellTracker.update(gx,gy,performance.now());
+  if(phraseBoard.style.display==='flex') updatePhraseDwells(gx,gy,Math.min(dt,80));
+  if($('kbPanel').style.display==='flex') updateKbDwells(gx,gy,Math.min(dt,80));
+  if($('iotPanel').style.display==='flex') updateIotDwells(gx,gy,Math.min(dt,80));
+  if(mainUI.style.display==='flex') updateMainMenuDwells(gx,gy,Math.min(dt,80));
+  if(mainUI.style.display==='flex') updatePanicDwell(gx,gy,Math.min(dt,80));
+  updateGazeBack(gx,gy,Math.min(dt,80));
+  updateGlobalPanelBack(gx,gy,Math.min(dt,80));
+  if($('visionPanel').style.display==='flex') updateVisionDwells(gx,gy,Math.min(dt,80));
+  if($('quickMsgPanel').style.display==='flex') updateQmDwells(gx,gy,Math.min(dt,80));
 }
-
 
 // ══════════════════════════════════════════════════════
 // [see source for notes]
@@ -1415,7 +1369,6 @@ function setTheme(t){
   const btn=$('th'+(map[t]||'N'));if(btn) btn.classList.add('active');
 }
 function openHow(){
-  resetAllDwells();
   $('howPanel').style.display='flex';
   pushPage('howPanel');
 }
@@ -1444,10 +1397,10 @@ function initStartModeUI(){
   });
 }
 
-function openA11y(){ resetAllDwells(); $('a11yPanel').style.display='flex'; pushPage('a11yPanel'); setTheme(currentTheme); setInputMode(inputMode); updateBlinkUI(); }
+function openA11y(){ $('a11yPanel').style.display='flex'; pushPage('a11yPanel'); setTheme(currentTheme); setInputMode(inputMode); updateBlinkUI(); }
 function closeA11y(){ $('a11yPanel').style.display='none'; popPage(); }
 
-function openArch(){ resetAllDwells(); $('archPanel').style.display='flex'; pushPage('archPanel'); }
+function openArch(){ $('archPanel').style.display='flex'; pushPage('archPanel'); }
 function closeArch(){ $('archPanel').style.display='none'; popPage(); }
 
 // ══════════════════════════════════════════════════════
@@ -1457,88 +1410,18 @@ function closeArch(){ $('archPanel').style.display='none'; popPage(); }
 // ══════════════════════════════════════════════════════
 // QUICK MSG
 // ══════════════════════════════════════════════════════
-const QM_STORAGE_KEY     = 'es_qm_contacts';
-const QM_MSG_STORAGE_KEY = 'es_qm_messages';
-
+const QM_STORAGE_KEY = 'es_qm_contacts';
 const QM_DEFAULT_CONTACTS = [
   {name:'Kişi 1', role:'Refakatçi', avatar:'👤', phone:''},
 ];
 let qmContacts = JSON.parse(localStorage.getItem(QM_STORAGE_KEY)||'null') || QM_DEFAULT_CONTACTS;
 
-const QM_DEFAULT_MESSAGES_TR = [
-  {i:'🆘', t:'Yardıma ihtiyacım var, lütfen gel.'},
-  {i:'😊', t:'İyiyim, merak etme.'},
-  {i:'🍽️', t:'Açım, yemek getirir misin?'},
-  {i:'💊', t:'İlaç zamanım geldi.'},
-  {i:'🚿', t:'Banyoya gitmem lazım.'},
-  {i:'😴', t:'Uyumak istiyorum.'},
-];
-const QM_DEFAULT_MESSAGES_EN = [
-  {i:'🆘', t:'I need help, please come.'},
-  {i:'😊', t:"I'm fine, don't worry."},
-  {i:'🍽️', t:"I'm hungry, can you bring food?"},
-  {i:'💊', t:"It's time for my medication."},
-  {i:'🚿', t:'I need to use the bathroom.'},
-  {i:'😴', t:'I want to sleep.'},
-];
-
-let qmMessages = JSON.parse(localStorage.getItem(QM_MSG_STORAGE_KEY)||'null') || null;
-
-function getQmMessages(){
-  if(qmMessages) return qmMessages;
-  return appLang==='en' ? QM_DEFAULT_MESSAGES_EN : QM_DEFAULT_MESSAGES_TR;
-}
-
-function saveQmMessages(msgs){
-  qmMessages = msgs;
-  localStorage.setItem(QM_MSG_STORAGE_KEY, JSON.stringify(msgs));
-}
-
-function renderQmMsgs(){
-  const list = $('qmMsgsList');
-  if(!list) return;
-  const msgs = getQmMessages();
-  list.innerHTML = '';
-  msgs.forEach((m, i) => {
-    const div = document.createElement('div');
-    div.className = 'qm-msg';
-    div.dataset.idx = i;
-    div.innerHTML = '<span class="qmm-icon">'+m.i+'</span><span class="qmm-text">'+m.t+'</span><button class="qmm-del" onclick="qmDeleteMessage('+i+')" title="Sil" style="margin-left:auto;background:none;border:none;color:rgba(255,80,80,0.7);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;">✕</button><div class="qm-dwell"></div>';
-    list.appendChild(div);
-  });
-  // placeholder'ı dile göre güncelle
-  const inp = $('qmNewText');
-  if(inp) inp.placeholder = appLang==='en' ? 'Type new message…' : 'Yeni mesaj yaz…';
-  bindQmDwells();
-}
-
-function qmAddMessage(){
-  const iconEl = $('qmNewIcon');
-  const textEl = $('qmNewText');
-  const icon = (iconEl.value.trim()) || '💬';
-  const text = textEl.value.trim();
-  if(!text){ showBlinkFlash(appLang==='en'?'Enter a message':'Mesaj girin'); return; }
-  const msgs = getQmMessages().slice();
-  msgs.push({i:icon, t:text});
-  saveQmMessages(msgs);
-  iconEl.value=''; textEl.value='';
-  renderQmMsgs();
-}
-
-function qmDeleteMessage(idx){
-  const msgs = getQmMessages().slice();
-  msgs.splice(idx, 1);
-  saveQmMessages(msgs);
-  renderQmMsgs();
-}
-
 function openQuickMsg(){
-  resetAllDwells();
   $('quickMsgPanel').style.display='flex';
   pushPage('quickMsgPanel');
   renderQmContacts();
   applyQmI18n();
-  renderQmMsgs();
+  bindQmDwells();
 }
 function closeQuickMsg(){
   $('quickMsgPanel').style.display='none';
@@ -1559,7 +1442,19 @@ function applyQmI18n(){
     if($('qmTitle')) $('qmTitle').textContent='📲 Quick Message';
     if($('qmMsgLabel')) $('qmMsgLabel').textContent='Quick Messages';
     if($('qmEditLabel')) $('qmEditLabel').textContent='Edit Contacts';
-    // Mesajlar renderQmMsgs() tarafından yönetilir
+    // English quick messages
+    const msgs=[
+      {i:'🆘',t:"I need help, please come."},
+      {i:'😊',t:"I'm fine, don't worry."},
+      {i:'🍽️',t:"I'm hungry, can you bring food?"},
+      {i:'💊',t:"It's time for my medication."},
+      {i:'🚿',t:"I need to use the bathroom."},
+      {i:'😴',t:"I want to sleep."},
+    ];
+    const list=$('qmMsgsList');
+    if(list) list.querySelectorAll('.qm-msg').forEach((el,i)=>{
+      if(msgs[i]){ el.querySelector('.qmm-icon').textContent=msgs[i].i; el.querySelector('.qmm-text').textContent=msgs[i].t; }
+    });
     // Contact roles
     const re0=document.getElementById('qmc0role');
     if(re0&&re0.textContent==='Refakatçi') re0.textContent='Caregiver';
@@ -1721,7 +1616,6 @@ function toggleWakeWord(){
 }
 
 function openDiag(){
-  resetAllDwells();
   $('diagPanel').style.display='flex';
   pushPage('diagPanel');
   renderDiag();
@@ -2632,7 +2526,7 @@ const EMOJIS=['💧','🆘','✅','❌','😣','🚽','🌡️','😴','❓','�
 let userPhrases=[],selEmoji='😊',phraseDwells=[];
 function loadPhrases(){ try{const s=localStorage.getItem('es_phrases');userPhrases=s?JSON.parse(s):[...DEF_PHRASES];}catch(e){userPhrases=[...DEF_PHRASES];} }
 function savePhrases(){ try{localStorage.setItem('es_phrases',JSON.stringify(userPhrases));}catch(e){} }
-function openPhraseBoard(){ resetAllDwells();loadPhrases();phraseBoard.style.display='flex';pushPage('phraseBoard');renderPhrases(); }
+function openPhraseBoard(){ loadPhrases();phraseBoard.style.display='flex';pushPage('phraseBoard');renderPhrases(); }
 function closePhraseBoard(){ phraseBoard.style.display='none';output.style.display='none';phraseDwells=[];popPage(); }
 function renderPhrases(){
   const g=$('pbGrid');g.innerHTML='';phraseDwells=[];
@@ -2675,7 +2569,7 @@ function updatePhraseDwells(gx,gy,dt){
 // ══════════════════════════════════════════════════════
 const IOT=[{i:'💡',n:'Light',s:false},{i:'📺',n:'TV',s:false},{i:'❄️',n:'AC',s:false},{i:'🚪',n:'Door',s:false},{i:'🔔',n:'Bell',s:false},{i:'🌡️',n:'Thermostat',s:false}];
 let iotDwells=[];
-function openIot(){resetAllDwells();$('iotPanel').style.display='flex';pushPage('iotPanel');renderIot();}
+function openIot(){$('iotPanel').style.display='flex';pushPage('iotPanel');renderIot();}
 function closeIot(){$('iotPanel').style.display='none';iotDwells=[];popPage();}
 function renderIot(){
   const g=$('iotGrid');g.innerHTML='';iotDwells=[];
@@ -2947,7 +2841,6 @@ let kbSuggDwells = [];
 let kbTouchRefs  = [];
 
 function openKeyboard(){
-  resetAllDwells();
   kbText=''; kbShift=false; kbLay=getAlphaLayout();
   $('kbPanel').style.display='flex';
   $('kbTextArea').dataset.ph=appLang==='tr'?'Yazmaya başlayın…':'Start typing…';
@@ -3782,7 +3675,6 @@ async function visionLoadCoco(){
 
 // ── Camera management
 async function openVision(){
-  resetAllDwells();
   if(!visionCheckSecurity()){ const vp=$('visionPanel'); if(vp) vp.style.display='flex'; pushPage('visionPanel'); return; }
   const vp=$('visionPanel'); if(vp) vp.style.display='flex';
   pushPage('visionPanel');
@@ -5118,6 +5010,7 @@ $('dwellSlider').oninput=e=>{DWELL_MS=e.target.value*100;$('dwellVal').textConte
 $('recalibBtn').onclick=startCalibration;
 $('evalBtn')&&($('evalBtn').onclick=startEvaluation);
 $('phraseBtn').onclick=openPhraseBoard;
+$('pbCloseBtn').onclick=closePhraseBoard;
 $('outputClose').onclick=()=>{output.style.display='none';};
 $('repDoneBtn').onclick=showMainMode;
 $('repRecalBtn').onclick=startCalibration;
@@ -5152,9 +5045,7 @@ function backToStart(){
   speak(appLang==='tr' ? 'Başlangıç ekranı.' : 'Start screen.');
 }
 function showMainMode(){
-  hideAllScreens();
-  dot.style.display=(inputMode==='eye'||inputMode==='both')?'block':'none';
-  mainUI.style.display='flex';
+  hideAllScreens();dot.style.display='block';mainUI.style.display='flex';
   setTheme(currentTheme);statusBar.style.display='block';irisQ.style.display='block';dwellRing.style.display='block';
   mainDwells=[];
   updateGazeBackVisibility();
@@ -5172,7 +5063,7 @@ function startLocationTracking(){
   setLocVal(t('locLoading'));
   if(locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
   locationWatchId=navigator.geolocation.watchPosition(
-    pos=>{ lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy}; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
+    pos=>{ lastLocation=pos.coords; reverseGeocode(pos.coords.latitude,pos.coords.longitude); },
     err=>{ const c=JSON.parse(localStorage.getItem('es_loc')||'null'); if(c){setLocVal(c.d);}else{setLocVal(err.code===1?t('locDenied'):t('locError'));} },
     {enableHighAccuracy:false,maximumAge:60000,timeout:12000}
   );
@@ -5193,12 +5084,33 @@ function setLocVal(v){ const el=document.getElementById('locValue'); if(el) el.t
 // ── PANIC BUTTON ──────────────────────────────────────
 let panicArmed=false, panicElapsed=0;
 function triggerPanic(){
-  const msg = appLang==='tr'
-    ? 'Yardıma ihtiyacım var, lütfen gel.'
-    : 'I need help, please come.';
-  qmSendMsg(msg, 0);
+  if(panicArmed) return;
+  panicArmed=true;
+  const btn=document.getElementById('panicBtn');
+  if(btn){ btn.style.background='rgba(220,38,38,0.45)'; btn.style.borderColor='#ff2222'; }
+  speak(t('sosAudio'));
+  const f=document.getElementById('blinkFlash');
+  if(f){ f.textContent=t('sosSending'); f.style.display='block'; }
+  const sos={timestamp:new Date().toISOString(),location:lastLocation?{lat:lastLocation.latitude,lon:lastLocation.longitude}:null,lang:appLang};
+  console.log('[EyeSense SOS]',sos);
+  setTimeout(()=>{
+    if(f){ f.textContent=t('sosSent'); }
+    setTimeout(()=>{ if(f) f.style.display='none'; },3500);
+    if(btn){ btn.style.background=''; btn.style.borderColor=''; }
+    panicArmed=false; panicElapsed=0;
+  },3000);
 }
-function updatePanicDwell(){}
+function updatePanicDwell(gx,gy,dt){
+  if(mainUI.style.display!=='flex') return;
+  const btn=document.getElementById('panicBtn'); if(!btn) return;
+  const r=btn.getBoundingClientRect();
+  const inside=gx>=r.left&&gx<=r.right&&gy>=r.top&&gy<=r.bottom;
+  if(inside){panicElapsed+=dt;btn.classList.add('gazing');}
+  else{panicElapsed=Math.max(0,panicElapsed-dt*2);btn.classList.remove('gazing');}
+  const pct=Math.min(1,panicElapsed/(DWELL_MS*2));
+  const dw=document.getElementById('panicDwell'); if(dw) dw.style.width=(pct*100)+'%';
+  if(pct>=1){panicElapsed=0;if(dw)dw.style.width='0%';triggerPanic();}
+}
 
 function initStart(){
   setTheme(currentTheme); setInputMode(inputMode);
@@ -5223,23 +5135,7 @@ function initStart(){
       startCalibration();
     }
   };
-  $('useSavedBtn').onclick=async()=>{
-    if(!loadCalibration()) return;
-
-    // EyeSense FIX v2:
-    // Kayıtlı kalibrasyon seçildiğinde göz modu aktif olmalı ve kamera mutlaka başlatılmalı.
-    // Önceden sadece showMainMode() çağrıldığı için kamera kapalı kalabiliyordu.
-    setInputMode('eye');
-    speak(t('calibLoaded'));
-
-    if(!cameraReady){
-      await main();
-    }
-
-    if(cameraReady){
-      showMainMode();
-    }
-  };
+  $('useSavedBtn').onclick=()=>{if(loadCalibration()){speak(t('calibLoaded'));showMainMode();}};
 }
 
 // ══════════════════════════════════════════════════════
@@ -5309,15 +5205,19 @@ async function main(){
     $('startFreshBtn').disabled = false;
     const msg = err.message || String(err);
     const isPermission = msg.includes('Permission') || msg.includes('NotAllowed') || msg.includes('denied');
-    document.body.innerHTML = `<div style="padding:28px 20px;color:#f44;font-family:system-ui,sans-serif;line-height:2.2;background:#040408;min-height:100vh;font-size:14px;">
-      <div style="font-size:22px;margin-bottom:16px;">❌ Failed to Start</div>
-      <b>Error:</b> ${msg}<br><br>
-      ${isPermission
-        ? '📷 Camera permission denied.<br>Please allow camera access in your browser settings.'
-        : '➡️ Open this page over <b>HTTPS</b>.<br>➡️ Check camera permissions.<br>➡️ Make sure no other tab is using the camera.'}
-      <br><br>
-      <button onclick="location.reload()" style="padding:12px 24px;background:#1a3a7a;border:none;border-radius:10px;color:#fff;font-size:15px;cursor:pointer;margin-top:8px;">🔄 Retry</button>
-    </div>`;
+    // Kamera hatası — sayfayı silme, üstüne katman koy
+    const errDiv = document.getElementById('cameraErrorMsg') || document.createElement('div');
+    errDiv.id = 'cameraErrorMsg';
+    errDiv.style.cssText = 'position:fixed;inset:0;background:#040408;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;color:#f44;font-family:system-ui;font-size:14px;line-height:2.2;text-align:center;';
+    errDiv.innerHTML = '<div style="font-size:22px;margin-bottom:16px;">\u274c Failed to Start</div>'
+      + '<b>Error:</b> Permission denied<br><br>'
+      + '\ud83d\udcf7 Camera permission denied.<br>Please allow camera access in your browser settings.'
+      + '<br><br>'
+      + '<button onclick="document.getElementById(\'cameraErrorMsg\').remove();main();" '
+      + 'style="padding:12px 24px;background:#1a3a7a;border:none;border-radius:10px;color:#fff;font-size:15px;cursor:pointer;margin-top:8px;">'
+      + '\ud83d\udd04 Retry</button>';
+    if(!document.getElementById('cameraErrorMsg')) document.body.appendChild(errDiv);
+    else document.body.appendChild(errDiv);
   }
 }
 
