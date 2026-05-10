@@ -446,8 +446,9 @@ body.night{filter:brightness(0.70);}
 /* ── TOP HEADER BAR ── */
 #mainTopBar{
   position:relative;z-index:2;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:max(16px,env(safe-area-inset-top)) 20px 0;
+  display:grid;grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  padding:max(14px,env(safe-area-inset-top)) 16px 10px;
   flex-shrink:0;
 }
 #mainLogoWrap{display:flex;align-items:center;gap:10px;}
@@ -487,6 +488,9 @@ body.night{filter:brightness(0.70);}
 }
 .lang-btn:hover:not(.active){color:rgba(255,255,255,0.65);}
 
+/* mainRightBar (eski SOS+dil satırı) tamamen gizlendi */
+#mainRightBar{display:none!important;}
+
 /* ── LOCATION + PANIC ROW ── */
 #infoRow{
   position:relative;z-index:2;
@@ -511,21 +515,27 @@ body.night{filter:brightness(0.70);}
   font-size:12px;color:rgba(255,255,255,0.82);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-/* PANIC BTN */
+/* PANIC BTN — infoRow'da geniş kart */
 #panicBtn{
-  flex-shrink:0;width:72px;
-  background:linear-gradient(160deg,rgba(220,30,30,0.22),rgba(180,0,0,0.08));
-  border:1.5px solid rgba(220,38,38,0.42);border-radius:16px;
+  flex-shrink:0;
+  width:80px;height:auto;min-height:54px;
+  background:linear-gradient(160deg,rgba(220,38,38,0.22),rgba(140,0,0,0.08));
+  border:1.5px solid rgba(220,38,38,0.5);border-radius:16px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;position:relative;overflow:hidden;
+  gap:3px;cursor:pointer;position:relative;overflow:hidden;
   transition:border-color .15s,background .15s;
-  animation:sosGlow 3s ease-in-out infinite;
+  animation:sosGlow 3.5s ease-in-out infinite;
 }
-@keyframes sosGlow{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}50%{box-shadow:0 0 0 5px rgba(220,38,38,0.1),0 0 18px rgba(220,38,38,0.15);}}
-#panicBtn .pa-icon{font-size:22px;line-height:1;}
-#panicBtn .pa-label{font-size:9px;font-family:'Syne',sans-serif;font-weight:800;color:#ff6666;letter-spacing:.08em;}
-#panicBtn.gazing{border-color:rgba(255,40,40,0.9);background:rgba(220,38,38,0.32);box-shadow:0 0 24px rgba(220,38,38,0.4);}
-#panicBtn .pa-dwell{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#ff4444,rgba(255,68,68,0.5));width:0%;border-radius:0 0 16px 16px;}
+#panicBtn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(255,255,255,0.06),transparent);
+  pointer-events:none;
+}
+@keyframes sosGlow{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}50%{box-shadow:0 0 0 5px rgba(220,38,38,0.07),0 0 22px rgba(220,38,38,0.2);}}
+#panicBtn .pa-icon{font-size:22px;line-height:1;position:relative;z-index:1;}
+#panicBtn .pa-label{font-size:10px;font-family:'Syne',sans-serif;font-weight:800;color:rgba(255,100,100,0.9);letter-spacing:.08em;position:relative;z-index:1;}
+#panicBtn.gazing{border-color:rgba(255,40,40,0.9);background:rgba(220,38,38,0.35);box-shadow:0 0 28px rgba(220,38,38,0.42);}
+#panicBtn .pa-dwell{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#ff4444,rgba(255,68,68,0.35));width:0%;border-radius:0 0 16px 16px;}
 
 /* ── SCROLL CONTENT AREA ── */
 #mainContent{
@@ -667,28 +677,41 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
 
 /* ── BACK BTN (bottom center) — replaces top-left gazeBack ── */
 #gazeBackBtn{display:none!important;}
-.panel-back-btn{
-  position:fixed;bottom:max(22px,env(safe-area-inset-bottom));
-  left:50%;transform:translateX(-50%);
-  z-index:9000;
-  background:rgba(6,6,16,0.9);
-  border:2px solid rgba(255,224,51,0.32);
-  border-radius:22px;padding:14px 44px;
-  font-size:16px;font-family:'Syne',sans-serif;font-weight:700;
-  color:#ffe033;cursor:pointer;display:none;
-  flex-direction:column;align-items:center;gap:4px;
-  overflow:hidden;min-width:190px;text-align:center;
-  box-shadow:0 4px 36px rgba(0,0,0,0.55);
-  transition:border-color .15s,background .15s;
-  backdrop-filter:blur(12px);
+
+/* Eski panel-back-btn tamamen gizle */
+.panel-back-btn{ display:none !important; }
+
+/* ✕ kapat butonu — TEK, sağ üstte sabit */
+#globalCloseBtn {
+  display: none;
+  position: fixed !important;
+  top: 12px !important;
+  right: 12px !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 999999 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: rgba(10,10,20,0.92) !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffd700 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent;
+  transform: none !important;
 }
-.panel-back-btn.gazing{border-color:var(--dwell);background:rgba(255,224,51,0.1);}
-.panel-back-btn .pb-dwell-bar{
-  position:absolute;bottom:0;left:0;height:4px;
-  background:linear-gradient(90deg,var(--dwell),rgba(255,224,51,0.4));
-  width:0%;border-radius:0 0 22px 22px;
+#globalCloseBtn:active {
+  background: rgba(255,215,0,0.25) !important;
 }
-.panel-back-btn .pb-hint{font-size:10px;color:rgba(255,224,51,0.5);font-weight:400;letter-spacing:.04em;}
 
 @media(max-width:500px){
   #mainTopBar{padding:max(12px,env(safe-area-inset-top)) 14px 0;}
@@ -696,7 +719,7 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
   #mainLogoOrb{width:34px;height:34px;font-size:14px;}
   #infoRow{padding:8px 14px 0;gap:8px;}
   #locationWidget{min-height:48px;padding:8px 12px;}
-  #panicBtn{width:64px;}
+  #panicBtn{width:80px;min-height:46px;}
   #mainContent{padding:10px 14px max(80px,calc(70px + env(safe-area-inset-bottom)));gap:9px;}
   #mainMenuGrid{gap:8px;}
   .btn-sm{min-height:95px;border-radius:18px;}
@@ -1314,23 +1337,29 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
   .btn-start-saved{font-size:12px;padding:11px 16px;}
   .start-v{bottom:8px;right:10px;}
 
-  /* ── MAIN UI — bottom tab bar ── */
+  /* ── MAIN UI — full screen mobile ── */
   #mainUI{
-    top:auto; bottom:0; left:0; right:0;
-    flex-direction:row; flex-wrap:wrap;
-    padding:5px 5px max(5px, env(safe-area-inset-bottom));
-    gap:3px;
-    background:rgba(4,4,12,0.97);
-    border-top:1px solid var(--border);
+    position:fixed;
+    inset:0;
+    flex-direction:column;
+    align-items:stretch;
+    background:var(--bg);
+    overflow:hidden;
     z-index:100;
   }
-  .panel{ display:none; }
-  .btn-sm{
-    flex:1; min-width:calc(25% - 4px);
-    text-align:center; padding:9px 2px;
-    font-size:9px; line-height:1.3;
-    min-height:44px; /* iOS touch target */
+  #mainTopBar{
+    padding:max(12px,env(safe-area-inset-top)) 14px 0;
   }
+  #mainLogoText{font-size:18px;}
+  #mainLogoOrb{width:32px;height:32px;font-size:13px;}
+  #infoRow{padding:8px 14px 0;}
+  #mainContent{
+    flex:1;
+    overflow-y:auto;
+    padding:10px 12px max(80px,calc(70px + env(safe-area-inset-bottom)));
+    gap:8px;
+  }
+  #mainMenuSliders{display:none;}
 
   /* ── STATUS BAR ── */
   #statusBar{
@@ -1512,3 +1541,1070 @@ input[type=range]{width:100%;accent-color:#4488ff;flex:1;}
   #scrollZoneTop,#scrollZoneBottom{ height:clamp(36px,10vh,56px); }
 }
 
+
+
+/* ═══════════════════════════════════════════════════
+   A11Y SLIDER CARDS — Enhanced
+   ═══════════════════════════════════════════════════ */
+.a11y-section-sens{
+  margin-top:4px;
+}
+.a11y-section-sens h3{
+  font-size:11px;color:rgba(255,255,255,0.35);
+  letter-spacing:.1em;text-transform:uppercase;
+  font-family:'Syne',sans-serif;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.a11y-slider-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.asc-header{
+  display:flex;align-items:center;gap:12px;
+}
+.asc-icon{font-size:22px;flex-shrink:0;}
+.asc-info{flex:1;}
+.asc-label{font-size:12px;color:var(--muted);margin-bottom:2px;}
+.asc-value{font-size:18px;font-family:'Syne',sans-serif;font-weight:800;color:#fff;}
+.asc-row{
+  display:flex;align-items:center;gap:10px;
+}
+.asc-btn{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-size:22px;font-weight:300;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.asc-btn:active{background:rgba(255,224,51,0.2);border-color:rgba(255,224,51,0.5);}
+.asc-row input[type=range]{
+  flex:1;
+  height:8px;
+  -webkit-appearance:none;
+  appearance:none;
+  background:rgba(255,255,255,0.12);
+  border-radius:4px;
+  outline:none;
+  accent-color:#4488ff;
+}
+.asc-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:26px;height:26px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#4488ff,#2255cc);
+  box-shadow:0 2px 8px rgba(68,136,255,0.5);
+  cursor:pointer;
+}
+.asc-row input[type=range]::-moz-range-thumb{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#4488ff,#2255cc);
+  border:none;cursor:pointer;
+}
+
+/* A11y section separators */
+.a11y-section{
+  width:100%;max-width:540px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.a11y-section:last-of-type{border-bottom:none;}
+.a11y-section h3{
+  font-size:11px;color:rgba(255,255,255,0.35);
+  letter-spacing:.1em;text-transform:uppercase;
+  font-family:'Syne',sans-serif;
+  margin-bottom:10px;
+}
+
+/* Large font fix */
+body.lg{--font:19px;}
+body.lg .bsm-label{font-size:13px!important;}
+body.lg .btn-sm .bsm-icon{font-size:34px!important;}
+body.lg #mainMenuGrid .btn-sm{min-height:130px!important;}
+body.lg .phrase-btn .pb-t{font-size:16px!important;}
+body.lg .kb-key{font-size:19px!important;height:56px!important;}
+body.lg .a11y-card .at{font-size:16px!important;}
+body.lg .asc-label{font-size:14px!important;}
+body.lg .asc-value{font-size:22px!important;}
+body.lg #outputText{font-size:26px!important;}
+
+/* Main menu grid — always full width on mobile */
+@media(max-width:600px){
+  #mainMenuGrid{
+    width:100%;
+    max-width:100%;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+  }
+  #mainMenuGrid .btn-sm{
+    min-height:115px;
+    border-radius:20px;
+  }
+  #mainMenuGrid .btn-sm .bsm-icon{font-size:28px;}
+  #mainMenuGrid .btn-sm .bsm-label{font-size:10px;padding:0 6px;}
+}
+
+/* Remove mainMenuSliders in main */
+#mainMenuSliders{display:none;}
+
+
+/* ═══════════════════════════════════════════════
+   BÜYÜK FONT — Kapsamlı override
+   ═══════════════════════════════════════════════ */
+body.lg { --font: 19px; }
+body.lg #mainLogoText { font-size: 26px !important; }
+body.lg #mainSectionLabel { font-size: 13px !important; }
+body.lg #mainSectionHint { font-size: 13px !important; }
+body.lg .btn-sm .bsm-icon { font-size: 34px !important; }
+body.lg .btn-sm .bsm-label { font-size: 13px !important; }
+body.lg #mainMenuGrid .btn-sm { min-height: 140px !important; }
+body.lg #locationWidget .lw-value { font-size: 15px !important; }
+body.lg #locationWidget .lw-label { font-size: 11px !important; }
+
+/* A11y panel large font */
+body.lg #a11yPanel h2 { font-size: 24px !important; }
+body.lg .a11y-section h3 { font-size: 14px !important; }
+body.lg .a11y-card .ai { font-size: 32px !important; }
+body.lg .a11y-card .at { font-size: 16px !important; }
+body.lg .a11y-card .al { font-size: 13px !important; }
+body.lg .mode-card .mi { font-size: 36px !important; }
+body.lg .mode-card .mt { font-size: 16px !important; }
+body.lg .mode-card .ml2 { font-size: 13px !important; }
+body.lg .asc-label { font-size: 15px !important; }
+body.lg .asc-value { font-size: 24px !important; }
+body.lg .asc-btn { width: 50px !important; height: 50px !important; font-size: 26px !important; }
+body.lg .adv-tool-btn .atb-title { font-size: 16px !important; }
+body.lg .adv-tool-btn .atb-sub { font-size: 13px !important; }
+
+/* Keyboard large font */
+body.lg .kb-key { font-size: 20px !important; height: 58px !important; }
+body.lg .kb-key.wide { font-size: 14px !important; }
+body.lg #kbTextArea { font-size: 22px !important; }
+body.lg .kb-sg { font-size: 14px !important; padding: 6px 16px !important; }
+
+/* Phrase board large font */
+body.lg .phrase-btn .pb-i { font-size: 28px !important; }
+body.lg .phrase-btn .pb-t { font-size: 15px !important; }
+body.lg #phraseBoard .pb-hdr b { font-size: 16px !important; }
+
+/* Vision panel large font */
+body.lg #vpTitle { font-size: 20px !important; }
+body.lg .vpb-label { font-size: 18px !important; }
+body.lg .vpb-sub { font-size: 13px !important; }
+body.lg #visionStatus { font-size: 15px !important; }
+body.lg #visionResultText { font-size: 17px !important; }
+
+/* Output large font */
+body.lg #outputText { font-size: 26px !important; }
+
+/* Quick msg large font */
+body.lg .qmc-name { font-size: 20px !important; }
+body.lg .qmm-text { font-size: 17px !important; }
+
+/* Slider touch feedback animation */
+.asc-row input[type=range]:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+  box-shadow: 0 2px 16px rgba(68,136,255,0.8);
+}
+.asc-btn:active {
+  transform: scale(0.92);
+}
+
+/* Wake word in adv tools - active state */
+#a11yWakeBtn.active-wake {
+  border-color: rgba(34,221,136,0.4) !important;
+  background: rgba(34,221,136,0.08) !important;
+}
+#a11yWakeBtn.active-wake .atb-title {
+  color: #22dd88 !important;
+}
+
+/* ═══ BÜYÜK METIN — mode-card fix ═══ */
+body.lg .mode-card { min-height: 110px !important; padding: 18px 14px !important; }
+body.lg .mode-card .mi { font-size: 38px !important; }
+body.lg .mode-card .mt { font-size: 17px !important; font-weight: 700; }
+body.lg .mode-card .ml2 { font-size: 13px !important; }
+body.lg .a11y-card { min-height: 90px !important; padding: 16px 10px !important; }
+body.lg .a11y-card .ai { font-size: 30px !important; }
+body.lg .a11y-card .at { font-size: 15px !important; }
+body.lg .a11y-card .al { font-size: 12px !important; }
+body.lg .a11y-slider-card .asc-icon { font-size: 28px !important; }
+body.lg .a11y-slider-card .asc-label { font-size: 16px !important; }
+body.lg .a11y-slider-card .asc-value { font-size: 26px !important; }
+body.lg .a11y-slider-card .asc-btn { width: 52px !important; height: 52px !important; font-size: 28px !important; border-radius: 14px !important; }
+body.lg #a11yPanel h2 { font-size: 26px !important; }
+body.lg .a11y-section h3 { font-size: 14px !important; letter-spacing: .12em; }
+body.lg .adv-tool-btn .atb-icon { font-size: 28px !important; }
+body.lg .adv-tool-btn .atb-title { font-size: 17px !important; }
+body.lg .adv-tool-btn .atb-sub { font-size: 13px !important; }
+body.lg .btn-p { font-size: 16px !important; padding: 14px 32px !important; }
+body.lg .btn-s { font-size: 15px !important; padding: 12px 22px !important; }
+
+
+/* ═══ ANA MENÜ TAM EKRAN FIX ═══ */
+#mainUI {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+#mainTopBar {
+  flex-shrink: 0;
+  padding: max(14px, env(safe-area-inset-top)) 16px 8px !important;
+}
+
+#infoRow {
+  flex-shrink: 0;
+  padding: 0 16px 0 !important;
+}
+
+#mainContent {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 14px max(16px, env(safe-area-inset-bottom)) !important;
+  gap: 10px !important;
+}
+
+#mainSectionRow {
+  flex-shrink: 0;
+}
+
+#mainMenuGrid {
+  flex: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#mainMenuGrid .btn-sm {
+  min-height: 0 !important;
+  height: 100% !important;
+  border-radius: 20px !important;
+  aspect-ratio: auto !important;
+}
+
+#mainMenuGrid .btn-sm .bsm-icon {
+  font-size: 30px !important;
+}
+
+#mainMenuGrid .btn-sm .bsm-label {
+  font-size: 11px !important;
+  padding: 0 8px !important;
+}
+
+#mainMenuSliders { display: none !important; }
+
+/* Başlık kaymasını düzelt */
+#mainLangBar {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+#mainLogoWrap {
+  flex: 1;
+}
+
+/* Mobilde top bar kompakt */
+@media(max-width: 600px) {
+  #mainTopBar {
+    padding: max(12px, env(safe-area-inset-top)) 12px 6px !important;
+  }
+  #mainLogoText { font-size: 20px !important; }
+  #mainLogoOrb { width: 34px !important; height: 34px !important; font-size: 15px !important; }
+  .btn-back-home { padding: 5px 10px !important; font-size: 11px !important; }
+  .lang-btn { padding: 4px 10px !important; font-size: 10px !important; }
+  #infoRow { padding: 6px 12px 0 !important; }
+  #mainContent { padding: 8px 12px max(16px, env(safe-area-inset-bottom)) !important; gap: 8px !important; }
+}
+
+/* ═══ ANA MENÜ TAM EKRAN FIX v2 ═══ */
+#mainUI {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+#mainTopBar {
+  flex-shrink: 0 !important;
+  padding: max(12px,env(safe-area-inset-top)) 14px 6px !important;
+}
+#mainLogoText { font-size: 20px !important; }
+#mainLogoOrb { width: 34px !important; height: 34px !important; }
+.btn-back-home { padding: 5px 10px !important; font-size: 11px !important; }
+.lang-btn { padding: 4px 10px !important; font-size: 10px !important; }
+#infoRow {
+  flex-shrink: 0 !important;
+  padding: 6px 14px 0 !important;
+}
+#locationWidget { min-height: 46px !important; padding: 8px 12px !important; }
+#panicBtn { width: 80px !important; min-height:46px !important; }
+#mainContent {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 8px 12px max(12px,env(safe-area-inset-bottom)) !important;
+  gap: 8px !important;
+}
+#mainSectionRow { flex-shrink: 0 !important; }
+#mainMenuGrid {
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(3,1fr) !important;
+  grid-template-rows: repeat(2,1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+}
+#mainMenuGrid .btn-sm {
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  border-radius: 20px !important;
+  aspect-ratio: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#mainMenuGrid .btn-sm .bsm-icon { font-size: 30px !important; }
+#mainMenuGrid .btn-sm .bsm-label { font-size: 11px !important; padding: 0 6px !important; }
+#mainMenuSliders { display: none !important; }
+
+/* ═══════════════════════════════════════════════
+   ANA MENÜ — TAM YENİDEN TASARIM
+   ═══════════════════════════════════════════════ */
+
+/* Reset mainUI */
+#mainUI {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  background: var(--bg) !important;
+}
+
+/* ── TOP BAR ── */
+#mainTopBar {
+  flex-shrink: 0 !important;
+  display: grid !important;
+  grid-template-columns: 44px 1fr 44px !important;
+  align-items: center !important;
+  padding: max(14px,env(safe-area-inset-top)) 14px 10px !important;
+  gap: 0 !important;
+}
+
+/* Sol: geri butonu */
+.main-back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.main-back-btn:active { background: rgba(255,255,255,0.15); }
+
+/* Orta: logo */
+#mainLogoWrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+#mainLogoOrb {
+  width: 32px !important; height: 32px !important;
+  font-size: 14px !important;
+  flex-shrink: 0;
+}
+#mainLogoText {
+  font-size: 21px !important;
+  letter-spacing: -.02em;
+}
+
+/* Sağ: dil switcher */
+#mainLangBar {
+  display: flex !important;
+  justify-content: flex-end !important;
+}
+.lang-switcher {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 20px !important;
+  padding: 2px !important;
+  gap: 1px !important;
+  display: flex !important;
+}
+.lang-btn {
+  padding: 4px 9px !important;
+  font-size: 10px !important;
+  border-radius: 16px !important;
+}
+
+/* ── INFO ROW ── */
+#infoRow {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  padding: 0 14px !important;
+}
+#locationWidget {
+  flex: 1 !important;
+  min-height: 48px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+#locationWidget .lw-label { font-size: 9px !important; }
+#locationWidget .lw-value { font-size: 12px !important; }
+#panicBtn {
+  width: 64px !important;
+  border-radius: 14px !important;
+}
+
+/* Divider between infoRow and grid */
+.main-divider {
+  flex-shrink: 0;
+  height: 1px;
+  margin: 10px 14px 0;
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── SECTION ROW ── */
+#mainContent {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 14px max(16px,env(safe-area-inset-bottom)) !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+}
+#mainSectionRow {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+#mainSectionLabel {
+  font-size: 10px !important;
+  color: rgba(255,255,255,0.25) !important;
+  letter-spacing: .14em !important;
+  font-family: 'Syne',sans-serif !important;
+}
+
+/* ── MENU GRID — tam kaplayan ── */
+#mainMenuGrid {
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(3,1fr) !important;
+  grid-template-rows: repeat(2,1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+}
+#mainMenuGrid .btn-sm {
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  border-radius: 22px !important;
+  aspect-ratio: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px 8px !important;
+}
+#mainMenuGrid .btn-sm .bsm-icon {
+  font-size: 28px !important;
+  line-height: 1 !important;
+}
+#mainMenuGrid .btn-sm .bsm-label {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  padding: 0 4px !important;
+  line-height: 1.3 !important;
+  color: rgba(255,255,255,0.55) !important;
+}
+#mainMenuGrid .btn-sm.gazing .bsm-label {
+  color: rgba(255,255,255,0.95) !important;
+}
+#mainMenuSliders { display: none !important; }
+
+/* Large font override for main menu */
+body.lg #mainLogoText { font-size: 24px !important; }
+body.lg #mainMenuGrid .btn-sm .bsm-icon { font-size: 34px !important; }
+body.lg #mainMenuGrid .btn-sm .bsm-label { font-size: 13px !important; }
+
+/* ═══════════════════════════════════════════════
+   ANA MENÜ — FINAL REDESIGN
+   ═══════════════════════════════════════════════ */
+#mainUI {
+  position: fixed !important; inset: 0 !important;
+  display: flex !important; flex-direction: column !important;
+  height: 100dvh !important; overflow: hidden !important;
+  background: var(--bg) !important;
+}
+
+/* ── TOP BAR: 3 sütun grid ── */
+#mainTopBar {
+  flex-shrink: 0 !important;
+  display: grid !important;
+  grid-template-columns: 44px 1fr auto !important;
+  align-items: center !important;
+  padding: max(14px,env(safe-area-inset-top)) 14px 10px !important;
+  gap: 8px !important;
+}
+
+/* Geri butonu */
+.main-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75); font-size: 18px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s; flex-shrink: 0;
+}
+.main-back-btn:active { background: rgba(255,255,255,0.18); }
+
+/* Logo — ortada */
+#mainLogoWrap {
+  display: flex !important; align-items: center !important;
+  justify-content: center !important; gap: 8px !important;
+}
+#mainLogoOrb { width: 32px !important; height: 32px !important; font-size: 14px !important; }
+#mainLogoText { font-size: 21px !important; }
+
+/* Sağ: SOS + dil */
+#mainRightBar {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* SOS butonu küçük header versiyonu */
+#panicBtn {
+  width: auto !important; min-width: 52px !important;
+  height: 34px !important; border-radius: 10px !important;
+  padding: 0 10px !important;
+  display: flex !important; flex-direction: row !important;
+  align-items: center !important; gap: 4px !important;
+  background: linear-gradient(160deg,rgba(220,30,30,0.28),rgba(180,0,0,0.12)) !important;
+  border: 1.5px solid rgba(220,38,38,0.5) !important;
+  flex-shrink: 0;
+}
+#panicBtn .pa-icon { font-size: 14px !important; line-height: 1; }
+#panicBtn .pa-label { font-size: 10px !important; font-weight: 800; color: #ff7777 !important; letter-spacing: .06em; }
+
+/* Dil switcher */
+.lang-switcher {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 20px !important; padding: 2px !important;
+  gap: 1px !important; display: flex !important;
+}
+.lang-btn { padding: 4px 9px !important; font-size: 10px !important; border-radius: 16px !important; }
+
+/* ── INFO ROW — sadece konum ── */
+#infoRow {
+  flex-shrink: 0 !important;
+  padding: 0 14px !important;
+  display: flex !important;
+}
+#locationWidget {
+  flex: 1 !important; min-height: 44px !important;
+  padding: 8px 14px !important; border-radius: 14px !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  display: flex !important; align-items: center !important; gap: 10px !important;
+}
+#locationWidget .lw-pin { font-size: 16px !important; }
+#locationWidget .lw-label { font-size: 9px !important; letter-spacing: .1em; }
+#locationWidget .lw-value { font-size: 12px !important; }
+
+/* ── CONTENT ── */
+#mainContent {
+  flex: 1 1 auto !important; overflow-y: auto !important;
+  display: flex !important; flex-direction: column !important;
+  padding: 14px 14px max(16px,env(safe-area-inset-bottom)) !important;
+  gap: 12px !important; min-height: 0 !important;
+}
+#mainSectionRow {
+  flex-shrink: 0 !important;
+  display: flex !important; align-items: center !important; justify-content: space-between !important;
+}
+#mainSectionLabel { font-size: 10px !important; color: rgba(255,255,255,0.22) !important; letter-spacing: .16em !important; }
+
+/* ── GRID ── */
+#mainMenuGrid {
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(3,1fr) !important;
+  grid-template-rows: repeat(2,1fr) !important;
+  gap: 10px !important;
+  width: 100% !important; max-width: 100% !important; min-height: 0 !important;
+}
+#mainMenuGrid .btn-sm {
+  min-height: 0 !important; height: 100% !important; width: 100% !important;
+  border-radius: 20px !important; aspect-ratio: auto !important;
+  display: flex !important; flex-direction: column !important;
+  align-items: center !important; justify-content: center !important;
+  gap: 9px !important; padding: 10px 6px !important;
+}
+#mainMenuGrid .btn-sm .bsm-icon { font-size: 28px !important; line-height: 1 !important; }
+#mainMenuGrid .btn-sm .bsm-label {
+  font-size: 10px !important; font-weight: 700 !important;
+  text-align: center !important; padding: 0 4px !important;
+  line-height: 1.3 !important; color: rgba(255,255,255,0.5) !important;
+}
+#mainMenuGrid .btn-sm.gazing .bsm-label { color: rgba(255,255,255,0.95) !important; }
+#mainMenuSliders { display: none !important; }
+
+/* Large font */
+body.lg #mainLogoText { font-size: 24px !important; }
+body.lg #mainMenuGrid .btn-sm .bsm-icon { font-size: 34px !important; }
+body.lg #mainMenuGrid .btn-sm .bsm-label { font-size: 13px !important; }
+body.lg #locationWidget .lw-value { font-size: 14px !important; }
+/* ═══════════════════════════════════════════════
+   KALİBRASYON KAMERA ÖNİZLEME
+   ═══════════════════════════════════════════════ */
+#calibCamWrap {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+#calibCamVideo {
+  width: 110px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1.5px solid rgba(68,136,255,0.45);
+  box-shadow:
+    0 0 0 1px rgba(68,136,255,0.15),
+    0 4px 20px rgba(0,0,0,0.7),
+    0 0 16px rgba(68,136,255,0.2);
+  /* Ayna modu — selfie */
+  transform: scaleX(-1);
+  background: #000;
+  display: block;
+}
+
+#calibCamLabel {
+  font-size: 9px;
+  color: rgba(68,136,255,0.75);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-align: center;
+  background: rgba(6,6,16,0.7);
+  border: 1px solid rgba(68,136,255,0.2);
+  border-radius: 8px;
+  padding: 3px 8px;
+  backdrop-filter: blur(6px);
+}
+
+/* Kalibrasyon ekranında mavi dot daha belirgin */
+#calibScreen ~ #dot {
+  width: 22px !important;
+  height: 22px !important;
+  opacity: 0.92;
+}
+
+/* Küçük ekranlarda kamera önizleme */
+@media(max-width: 400px) {
+  #calibCamVideo {
+    width: 85px;
+    height: 64px;
+    border-radius: 10px;
+  }
+}
+/* ── TARAMA MODU ── */
+.scan-row-active {
+  background: rgba(255,224,51,0.12) !important;
+  border-radius: 10px;
+  outline: 2px solid rgba(255,224,51,0.6);
+  transition: background 0.15s;
+}
+.scan-key-active {
+  background: rgba(255,224,51,0.35) !important;
+  border-color: rgba(255,224,51,0.9) !important;
+  transform: scale(1.12);
+  box-shadow: 0 0 16px rgba(255,224,51,0.5) !important;
+  z-index: 2;
+  transition: all 0.1s;
+}
+#kbModeScan { color: rgba(255,224,51,0.6); }
+#kbModeScan.active { background: rgba(255,224,51,0.15); color: #ffe033; }
+/* ════════════════════════════════════════════════════
+   KEYBOARD v16 — Kademeli Dwell-Selection
+   ════════════════════════════════════════════════════ */
+
+#kbPanel {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+  background: #0d1117;
+  box-sizing: border-box;
+  overflow: visible;
+  font-family: 'DM Sans', sans-serif;
+  gap: 0;
+}
+
+/* ── Top bar */
+#kbTopBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 8px;
+  background: #161b22;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+/* Mini cam */
+#kbCamWrap {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  border: 2px solid rgba(68,136,255,0.5);
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(68,136,255,0.25);
+}
+#kbCamVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+#kbGazeDot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4444;
+  box-shadow: 0 0 8px #ff4444;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transition: left 0.05s, top 0.05s;
+}
+
+#kbTextWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+#kbTypingLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+}
+#kbTextArea {
+  min-height: 32px;
+  max-height: 56px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #f0f4ff;
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.kb-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #ffd700;
+  border-radius: 1px;
+  animation: kbBlink 1s step-end infinite;
+  margin-left: 1px;
+  vertical-align: middle;
+}
+@keyframes kbBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.kb-top-btn {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.75);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Suggestions */
+#kbSugg {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 12px;
+  min-height: 38px;
+  flex-shrink: 0;
+  scrollbar-width: none;
+  background: #161b22;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+#kbSugg::-webkit-scrollbar { display: none; }
+.kb-sg {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+  border-radius: 16px;
+  padding: 4px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.kb-sg:active { background: rgba(255,215,0,0.2); }
+
+/* ── Main area */
+#kbMain {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* ── BLOCK VIEW — 2×2 grid */
+.kb-blocks-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  height: 100%;
+}
+.kb-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+  padding-bottom: 14px;
+  user-select: none;
+}
+.kb-block-label {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+}
+.kb-block-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  font-family: monospace;
+}
+
+/* ── KEY VIEW — wrap grid */
+.kb-keys-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+}
+.kb-key {
+  flex: 1 1 calc(25% - 8px);
+  min-width: 70px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.13);
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 12px;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.kb-key-back {
+  flex: 1 1 100%;
+  min-height: 56px;
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+}
+.kb-key-label {
+  font-size: 40px;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.kb-key-back .kb-key-label,
+.kb-key-space .kb-key-label,
+.kb-key-del .kb-key-label {
+  font-size: 22px;
+}
+.kb-key-space {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  flex: 1 1 calc(50% - 8px);
+}
+.kb-key-del {
+  background: rgba(220,38,38,0.15);
+  border-color: rgba(220,38,38,0.3);
+  color: #fca5a5;
+  flex: 1 1 calc(50% - 8px);
+}
+
+/* ── Dwell progress bar */
+.kb-dwell-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+.kb-dwell-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  transition: width 0.05s linear;
+}
+
+/* ── Gazing state — gold glow */
+.kb-block.kb-gazing,
+.kb-key.kb-gazing {
+  border-color: #ffd700;
+  background: rgba(255,215,0,0.12);
+  box-shadow: 0 0 0 2px rgba(255,215,0,0.3),
+              0 0 24px rgba(255,215,0,calc(var(--glow, 0) * 0.5));
+}
+
+/* ── Selected flash */
+.kb-selected-flash {
+  background: rgba(255,215,0,0.45) !important;
+  border-color: #ffd700 !important;
+}
+
+/* ── Action bar */
+#kbActions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  background: #161b22;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.kb-act {
+  flex: 1;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.kb-act-speak {
+  background: rgba(127,29,29,0.6);
+  color: #fca5a5;
+}
+.kb-act-voice {
+  background: rgba(30,58,95,0.65);
+  color: #93c5fd;
+}
+.kb-act-menu {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* ── Voice overlay */
+#kbPanel #kbVoiceStatus {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 9000 !important;
+  display: none;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(13,17,23,0.98) !important;
+  gap: 18px !important;
+  pointer-events: auto !important;
+  box-sizing: border-box !important;
+  padding: 20px !important;
+}
+#kbPanel #kbVoiceStatus.show,
+#kbPanel #kbVoiceStatus[style*="flex"] { display: flex !important; }
+#kbPanel #kbVoiceStatus .vs-icon { font-size: 52px !important; }
+#kbPanel #kbVoiceStatus .vs-msg  {
+  font-size: 22px !important; font-weight: 700 !important;
+  color: #e0e7ff !important; text-align: center !important;
+  padding: 0 !important; max-width: 90% !important;
+  word-break: break-word !important;
+}
+#kbPanel #kbVoiceStatus .vs-interim {
+  font-size: 14px !important; color: rgba(255,255,255,0.4) !important;
+  text-align: center !important;
+}
