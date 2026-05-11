@@ -124,21 +124,34 @@ app.post('/api/notify-caregiver', async (req, res) => {
   }
 
   const title    = 'EyeSense — ' + contactName;
-  const bodyText = (location && location.lat && location.lng && !isNaN(location.lat) && !isNaN(location.lng))
-    ? message + ' 📍 ' + Number(location.lat).toFixed(4) + ', ' + Number(location.lng).toFixed(4)
-    : message;
+  const hasLocation = location &&
+    location.lat !== undefined && location.lat !== null && location.lat !== '' &&
+    location.lng !== undefined && location.lng !== null && location.lng !== '' &&
+    !isNaN(Number(location.lat)) && !isNaN(Number(location.lng));
+
+  const latStr = hasLocation ? String(location.lat) : '';
+  const lngStr = hasLocation ? String(location.lng) : '';
 
   const base = {
-    notification: { title, body: bodyText },
+    // notification objesi OLMADAN gönder — pushNotificationReceived tetiklensin
     data: {
+      title,
       message,
-      lat:  location ? String(location.lat) : '',
-      lng:  location ? String(location.lng) : '',
-      ts:   timestamp || new Date().toISOString(),
-      type: 'eyesense_qm'
+      body:  message,
+      lat:   latStr,
+      lng:   lngStr,
+      ts:    timestamp || new Date().toISOString(),
+      type:  'eyesense_qm'
     },
-    android: { priority: 'high' },
-    apns:    { payload: { aps: { sound: 'default', badge: 1 } } }
+    android: {
+      priority: 'high',
+      notification: {
+        title,
+        body: message,
+        sound: 'default'
+      }
+    },
+    apns: { payload: { aps: { sound: 'default', badge: 1 } } }
   };
 
   const results = [], failures = [];
