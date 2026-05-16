@@ -453,7 +453,7 @@ async function registerTokenToBackend(token) {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
-        contactId:   selectedContactIdx,
+        contactId:   String(selectedContactIdx) + "_web",
         token,
         deviceLabel: navigator.userAgent.slice(0, 60)
       }),
