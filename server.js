@@ -30,7 +30,7 @@ try {
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '50kb' }));
 
-/* ── Statik dosyalar: public/ klasörü (style.css, HTML dosyaları vb.) ── */
+/* ── Statik dosyalar: public/ klasörü ── */
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, _res, next) => {
@@ -42,6 +42,7 @@ app.get('/', (_req, res) => {
   res.json({ status: 'ok', service: 'EyeSense Notifier', firebaseReady, ts: new Date().toISOString() });
 });
 
+// ── TOKEN KAYIT ──
 app.post('/api/register-token', async (req, res) => {
   const { contactId, token, deviceLabel } = req.body;
   if (contactId === undefined || contactId === null || !token) {
@@ -52,7 +53,6 @@ app.post('/api/register-token', async (req, res) => {
 
   try {
     if (db) {
-      // Önce bu contactId'ye ait tüm eski tokenları sil
       const oldSnap = await db.collection('fcm_tokens')
         .where('contactId', '==', String(contactId)).get();
       if (!oldSnap.empty) {
@@ -61,7 +61,6 @@ app.post('/api/register-token', async (req, res) => {
         console.log('Eski tokenlar silindi, adet:', oldSnap.size);
       }
 
-      // Yeni token'ı kaydet
       const docId = String(contactId) + '_' + token.slice(-16);
       console.log('Firestore yaziliyor, docId:', docId);
       await db.collection('fcm_tokens').doc(docId).set({
@@ -81,6 +80,7 @@ app.post('/api/register-token', async (req, res) => {
   }
 });
 
+// ── TOKEN LİSTESİ ──
 app.get('/api/tokens', async (_req, res) => {
   try {
     if (!db) return res.json({ contacts: {}, note: 'Firestore yok' });
@@ -97,6 +97,11 @@ app.get('/api/tokens', async (_req, res) => {
   }
 });
 
+// ── BİLDİRİM GÖNDER ──
+// Arkadaşının güncel versiyonu kullanıldı:
+// - notification objesi yok → Capacitor pushNotificationReceived tetiklenir
+// - konum kontrolü daha güvenli (null/undefined/NaN hepsi kontrol ediliyor)
+// - android.notification ile bildirim görünümü sağlanıyor
 app.post('/api/notify-caregiver', async (req, res) => {
   const { message, contactName = 'Refakatci', contactId, fcmToken, location, timestamp, lang = 'tr' } = req.body;
   if (!message) return res.status(400).json({ error: 'message gerekli' });
@@ -123,7 +128,7 @@ app.post('/api/notify-caregiver', async (req, res) => {
     return res.json({ success: true, mode: 'no-token', message, hint: 'Refakatci panelinde Baglana basin' });
   }
 
-  const title    = 'EyeSense — ' + contactName;
+  const title = 'EyeSense — ' + contactName;
   const hasLocation = location &&
     location.lat !== undefined && location.lat !== null && location.lat !== '' &&
     location.lng !== undefined && location.lng !== null && location.lng !== '' &&
@@ -133,7 +138,6 @@ app.post('/api/notify-caregiver', async (req, res) => {
   const lngStr = hasLocation ? String(location.lng) : '';
 
   const base = {
-    // notification objesi OLMADAN gönder — pushNotificationReceived tetiklensin
     data: {
       title,
       message,
