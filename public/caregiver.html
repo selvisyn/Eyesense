@@ -82,9 +82,8 @@
 
 <div class="footer">EyeSense <span>v14</span> · Caregiver Panel</div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+<!-- Capacitor Runtime -->
+<script src="capacitor.js"></script>
 
 <script>
 /* ══════════════════════════════════════════════════════════
@@ -99,8 +98,28 @@ const FIREBASE_CONFIG = {
   appId:             "1:577546876245:web:5cadd6c853ec23cb16abdc"
 };
 
-const VAPID_KEY   = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
 const BACKEND_URL = 'https://eyesense-backend.onrender.com';
+
+/* ══════════════════════════════════════════════════════════
+   CAPACITOR PUSH NOTIFICATIONS
+   @capacitor/push-notifications paketi kullanılır.
+   Native Android FCM token alır — Notification API'sine
+   ihtiyaç duymaz, https://localhost üzerinde çalışır.
+══════════════════════════════════════════════════════════ */
+let PushNotifications = null;
+
+async function initCapacitor() {
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+      PushNotifications = window.Capacitor.Plugins.PushNotifications;
+      console.log('[Caregiver] Capacitor PushNotifications plugin hazır.');
+    } else {
+      console.warn('[Caregiver] Capacitor plugin bulunamadı, web moduna geçiliyor.');
+    }
+  } catch (e) {
+    console.warn('[Caregiver] Capacitor init hatası:', e);
+  }
+}
 
 /* ══════════════════════════════════════════════════════════
    I18N
@@ -163,6 +182,7 @@ const STRINGS = {
 };
 
 let lang = localStorage.getItem('es_cg_lang') || 'tr';
+let currentState = 'idle';
 
 function t(key, ...args) {
   const val = STRINGS[lang][key];
@@ -175,30 +195,27 @@ function setLang(l) {
   document.documentElement.lang = l;
   document.getElementById('lang-tr').classList.toggle('active', l === 'tr');
   document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  console.log('[Lang] switched to:', l, '| lblNotifs:', document.getElementById('lbl-notifs')?.textContent);
   applyStrings();
+  console.log('[Lang] after applyStrings lblNotifs:', document.getElementById('lbl-notifs')?.textContent);
   // Re-render feed for date locale
   rerenderFeed();
 }
 
 function applyStrings() {
-  document.getElementById('tb-title').textContent          = t('tbTitle');
-  document.getElementById('tb-sub').textContent            = t('tbSub');
+  document.getElementById('tb-title').textContent           = t('tbTitle');
+  document.getElementById('tb-sub').textContent             = t('tbSub');
   document.getElementById('lbl-status-section').textContent = t('lblStatusSection');
-  document.getElementById('lbl-notifs').textContent        = t('lblNotifs');
-  document.getElementById('btn-connect-text').textContent  = connected ? t('btnReconnect') : t('btnConnect');
-  document.getElementById('btn-clear-text').textContent    = t('btnClear');
+  document.getElementById('lbl-notifs').textContent         = t('lblNotifs');
+  document.getElementById('btn-clear-text').textContent     = t('btnClear');
 
   const emptyEl = document.getElementById('empty-text');
   if (emptyEl) {
     emptyEl.innerHTML = t('emptyNotifs').replace('\n', '<br>');
   }
 
-  // Sync status display text if currently idle
-  if (!connected && !connecting) {
-    document.getElementById('status-text').textContent = t('statusIdle');
-    document.getElementById('status-main').textContent = t('mainIdle');
-    document.getElementById('status-sub').textContent  = t('subIdle');
-  }
+  // setStatus mevcut durumu biliyor, sadece onu yeniden çağır
+  setStatus(currentState);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -206,7 +223,6 @@ function applyStrings() {
 ══════════════════════════════════════════════════════════ */
 const selectedContactIdx = 0;
 let currentToken    = null;
-let messaging       = null;
 let connected       = false;
 let connecting      = false;
 const notifications = [];
@@ -215,7 +231,7 @@ const NOTIF_FEED_KEY = 'es_caregiver_feed';
 /* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Apply saved language
   document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
   document.getElementById('lang-en').classList.toggle('active', lang === 'en');
@@ -227,8 +243,16 @@ document.addEventListener('DOMContentLoaded', () => {
     saved.forEach(n => appendNotif(n, false));
   } catch(_) {}
 
-  // Auto-reconnect if permission already granted
-  if (Notification.permission === 'granted') {
+  // Capacitor plugin'i başlat
+  await initCapacitor();
+
+  // Auto-reconnect: Capacitor varsa direkt bağlan, yoksa web Notification kontrolü
+  if (PushNotifications) {
+    const permStatus = await PushNotifications.checkPermissions();
+    if (permStatus.receive === 'granted') {
+      connectNotifications(true);
+    }
+  } else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     connectNotifications(true);
   }
 });
@@ -236,7 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ══════════════════════════════════════════════════════════
    STATUS HELPERS
 ══════════════════════════════════════════════════════════ */
-function setStatus(state, mainText, subText) {
+
+function setStatus(state) {
+  currentState = state;
   const pill   = document.getElementById('status-pill');
   const dot    = document.getElementById('status-dot');
   const hero   = document.getElementById('status-hero');
@@ -244,9 +270,30 @@ function setStatus(state, mainText, subText) {
 
   pill.className = 'status-pill ' + state;
   dot.className  = 'status-dot' + (state === 'loading' ? ' pulse' : '');
-  document.getElementById('status-text').textContent = t('status' + capitalize(state === 'loading' ? 'connecting' : state));
-  document.getElementById('status-main').textContent = mainText;
-  document.getElementById('status-sub').textContent  = subText;
+
+  const labelKey = 'status' + capitalize(state === 'loading' ? 'connecting' : state);
+  document.getElementById('status-text').textContent = t(labelKey);
+
+  if (state === 'ok') {
+    document.getElementById('status-main').textContent = t('mainOk');
+    document.getElementById('status-sub').textContent  = t('subOk');
+    document.getElementById('btn-connect-icon').textContent = '✅';
+    document.getElementById('btn-connect-text').textContent = t('btnReconnect');
+  } else if (state === 'loading') {
+    document.getElementById('status-main').textContent = t('mainConnecting');
+    document.getElementById('status-sub').textContent  = t('subConnecting');
+    document.getElementById('btn-connect-icon').textContent = '🔔';
+    document.getElementById('btn-connect-text').textContent = t('btnConnect');
+  } else if (state === 'error') {
+    document.getElementById('status-main').textContent = t('mainError');
+    document.getElementById('btn-connect-icon').textContent = '🔔';
+    document.getElementById('btn-connect-text').textContent = t('btnConnect');
+  } else {
+    document.getElementById('status-main').textContent = t('mainIdle');
+    document.getElementById('status-sub').textContent  = t('subIdle');
+    document.getElementById('btn-connect-icon').textContent = '🔔';
+    document.getElementById('btn-connect-text').textContent = t('btnConnect');
+  }
 
   hero.classList.toggle('connected', state === 'ok');
   ring.classList.toggle('visible',   state === 'ok');
@@ -261,9 +308,85 @@ async function connectNotifications(silent = false) {
   const btn = document.getElementById('btn-connect');
   btn.disabled = true;
   connecting = true;
-  setStatus('loading', t('mainConnecting'), t('subConnecting'));
+  setStatus('loading');
 
   try {
+
+    /* ── CAPACITOR YOLU (Android/iOS native) ── */
+    if (PushNotifications) {
+      // İzin iste
+      let permStatus = await PushNotifications.checkPermissions();
+      if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+      if (permStatus.receive !== 'granted') {
+        throw new Error(t('errPermission'));
+      }
+
+      // Dinleyicileri yalnızca bir kez kaydet
+      if (!window._cgCapacitorBound) {
+        window._cgCapacitorBound = true;
+
+        // Token geldi
+        PushNotifications.addListener('registration', async (tokenData) => {
+          const token = tokenData.value;
+          console.log('[Caregiver] Capacitor FCM Token:', token);
+          currentToken = token;
+          await registerTokenToBackend(token);
+
+          connected  = true;
+          connecting = false;
+          setStatus('ok');
+          btn.disabled = false;
+        });
+
+        // Token alma hatası
+        PushNotifications.addListener('registrationError', (err) => {
+          console.error('[Caregiver] Capacitor registration error:', err);
+          connected  = false;
+          connecting = false;
+          setStatus('error');
+          if (!silent) alert(err.error || t('errNoToken'));
+          btn.disabled = false;
+        });
+
+        // Uygulama açıkken gelen bildirim
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('[Caregiver] Foreground push:', JSON.stringify(notification));
+          const d = notification.data || {};
+          const notif = {
+            msg: notification.body || d.body || d.message || '—',
+            ts:  d.ts || new Date().toISOString(),
+            lat: (d.lat && d.lat !== 'undefined') ? d.lat : '',
+            lng: (d.lng && d.lng !== 'undefined') ? d.lng : ''
+          };
+          appendNotif(notif, true, true);
+        });
+
+        // Bildirime tıklandı (uygulama arka plandayken)
+        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+          console.log('[Caregiver] Notification action:', JSON.stringify(action));
+          const data = action.notification?.data || {};
+          const notif = {
+            msg: action.notification?.body || data.body || data.message || '—',
+            ts:  data.ts || new Date().toISOString(),
+            lat: (data.lat && data.lat !== 'undefined') ? data.lat : '',
+            lng: (data.lng && data.lng !== 'undefined') ? data.lng : ''
+          };
+          appendNotif(notif, true, false);
+        });
+      }
+
+      // Kayıt başlat → registration listener token'ı yakalar
+      await PushNotifications.register();
+      return; // Token callback'i async gelir, burada bitmez
+    }
+
+    /* ── WEB YOLU (tarayıcıda açıldığında) ── */
+    if (typeof Notification === 'undefined') {
+      throw new Error('Bu ortamda bildirim desteklenmiyor.');
+    }
+
     if (!('serviceWorker' in navigator)) throw new Error(t('errNoSW'));
 
     const swPath = new URL('./firebase-messaging-sw.js', location.href).pathname;
@@ -273,54 +396,46 @@ async function connectNotifications(silent = false) {
     if (firebase.apps.length === 0) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
-    messaging = firebase.messaging();
+    const messaging = firebase.messaging();
 
-    if (connected) {
-      btn.disabled = false;
-      return;
-    }
+    if (connected) { btn.disabled = false; return; }
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') throw new Error(t('errPermission'));
 
+    const VAPID_KEY = 'BDUIJgEhPpPDTsiLSXb2JnOjjKRHEbIBz9Cm-91AGGwGPJpXJyPUAdk5kW4AApCchxe8CqXI6PErTHhmUhn8sUY';
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
     if (!token) throw new Error(t('errNoToken'));
 
     currentToken = token;
-    console.log('[Caregiver] FCM Token:', token);
-
+    console.log('[Caregiver] FCM Token (web):', token);
     await registerTokenToBackend(token);
 
-   // Foreground messages — listener'ı yalnızca bir kez kaydet
-if (!window._cgOnMessageBound) {
-  window._cgOnMessageBound = true;
-  messaging.onMessage((payload) => {
-    console.log('[Caregiver] Foreground message:', payload);
-    const notif = {
-      msg: payload.notification?.body || payload.data?.message || '—',
-      ts:  payload.data?.ts || new Date().toISOString(),
-      lat: payload.data?.lat || '',
-      lng: payload.data?.lng || ''
-    };
-    appendNotif(notif, true, true);
-  });
-}
-    
+    if (!window._cgOnMessageBound) {
+      window._cgOnMessageBound = true;
+      messaging.onMessage((payload) => {
+        console.log('[Caregiver] Foreground message:', payload);
+        const notif = {
+          msg: payload.notification?.body || payload.data?.message || '—',
+          ts:  payload.data?.ts || new Date().toISOString(),
+          lat: payload.data?.lat || '',
+          lng: payload.data?.lng || ''
+        };
+        appendNotif(notif, true, true);
+      });
+    }
 
     connected  = true;
     connecting = false;
-    setStatus('ok', t('mainOk'), t('subOk'));
-    document.getElementById('btn-connect-icon').textContent = '✅';
-    document.getElementById('btn-connect-text').textContent  = t('btnReconnect');
+    setStatus('ok');
     btn.disabled = false;
 
   } catch (err) {
     console.error('[Caregiver]', err);
     connected  = false;
     connecting = false;
-    setStatus('error', t('mainError'), t('subError', err.message));
-    document.getElementById('btn-connect-icon').textContent = '🔔';
-    document.getElementById('btn-connect-text').textContent  = t('btnConnect');
+    setStatus('error');
+    document.getElementById('status-sub').textContent = err.message;
     if (!silent) alert(err.message);
     btn.disabled = false;
   }
@@ -366,7 +481,9 @@ function appendNotif(notif, save, isNew = false) {
   const dateStr = date.toLocaleDateString(locale,  { day: '2-digit', month: 'short' });
 
   let mapsHtml = '';
-  if (notif.lat && notif.lng) {
+  const validLat = notif.lat && notif.lat !== 'undefined' && notif.lat !== '';
+  const validLng = notif.lng && notif.lng !== 'undefined' && notif.lng !== '';
+  if (validLat && validLng) {
     const mapsUrl = 'https://www.google.com/maps?q=' + notif.lat + ',' + notif.lng;
     mapsHtml = `<a class="notif-maps" href="${mapsUrl}" target="_blank">📍 ${t('mapsLink')}</a>`;
   }
@@ -401,7 +518,7 @@ function rerenderFeed() {
       const timeEl  = item.querySelector('.notif-time');
       if (timeEl) timeEl.textContent = `${dateStr} · ${timeStr}`;
       const mapsEl = item.querySelector('.notif-maps');
-      if (mapsEl) mapsEl.childNodes[1] && (mapsEl.lastChild.textContent = ' ' + t('mapsLink'));
+      if (mapsEl) mapsEl.lastChild.textContent = ' ' + t('mapsLink');
     } catch(_) {}
   });
 }
