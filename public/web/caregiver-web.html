@@ -392,7 +392,7 @@ async function connectNotifications(silent = false) {
 
     if (!('serviceWorker' in navigator)) throw new Error(t('errNoSW'));
 
-    const swPath = new URL('./firebase-messaging-sw.js', location.href).pathname;
+    const swPath = new URL('../firebase-messaging-sw.js', location.href).pathname;
     const swReg  = await navigator.serviceWorker.register(swPath);
     console.log('[Caregiver] SW registered:', swReg.scope);
 
