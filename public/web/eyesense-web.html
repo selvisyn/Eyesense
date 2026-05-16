@@ -10,12 +10,22 @@
 <meta name="theme-color" content="#060610">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="eyesense.css">
+  <link rel="stylesheet" href="eyesense-web.css">
+
 <!-- Styles moved to eyesense.css -->
 </head>
 <body>
 
 <video id="video" autoplay playsinline muted></video>
+
+<!-- HOCANIN GÖRMESİ İÇİN: köşede canlı kamera + göz/iris çizimi -->
+<div id="teacherCamBox">
+  <div id="teacherCamTitle">TECHNICAL GAZE DEBUG</div>
+  <video id="teacherCamVideo" autoplay playsinline muted></video>
+  <canvas id="teacherCamCanvas"></canvas>
+  <div id="teacherCamInfo">Kamera bekleniyor…</div>
+</div>
+
 <div id="dot"></div>
 <div id="dwellRing">
   <svg width="40" height="40" viewBox="0 0 40 40">
@@ -25,18 +35,17 @@
   </svg>
 </div>
 
+<div id="blinkFlash">👁 Blink</div>
 <div id="scrollZoneTop"><span class="sz-arrow">▲</span></div>
 <div id="scrollZoneBottom"><span class="sz-arrow">▼</span></div>
-<div id="olIndicator">🔄 Online learning…</div>
+<div id="blinkHint">😉 Single blink = select &nbsp;·&nbsp; 😉😉 Double blink = back</div>
+<div id="olIndicator">🔒 Stable calibration mode</div>
 <div id="calibErrMsg"></div>
 <div id="lightWarn">⚠️ Low light</div>
 <div id="headWarn">⚠️ Head movement detected</div>
 
-<!-- PANEL GERİ BUTONU — sağ üst köşe, dwell destekli -->
-<div id="panelBackBtn">
-  <span class="pbb-icon">✕</span>
-  <div class="pbb-dwell"><div class="pbb-fill" id="panelBackFill"></div></div>
-</div>
+<!-- GAZE BACK -->
+<div id="gazeBackBtn">← Back<div class="gb-dwell" id="gazeBackDwell"></div></div>
 
 <!-- ═══ START SCREEN ═══ -->
 <div class="screen" id="startScreen">
@@ -88,16 +97,34 @@
     </div>
 
   </div>
-  <div class="start-v">v14</div>
+  <div class="start-v">v38 more-double-blink-fix</div>
+</div>
+
+
+
+<!-- LANGUAGE SELECTION — kalibrasyondan sonra çıkar -->
+<div class="screen hidden" id="languageScreen">
+  <h1 class="lang-choice-title">Dil Seçimi / Language</h1>
+  <p class="lang-choice-sub">Gözünüzle bakıp bekleyin veya mouse ile tıklayın.</p>
+  <div class="lang-choice-grid">
+    <button class="lang-choice-card" data-lang-choice="tr" onclick="chooseLanguageAndContinue('tr')">
+      <span class="lang-choice-code">TR</span>
+      <span class="lang-choice-name">Türkçe</span>
+      <span class="lang-choice-hint">Bakıp bekle · Tıkla</span>
+      <div class="lang-choice-dwell"></div>
+    </button>
+    <button class="lang-choice-card" data-lang-choice="en" onclick="chooseLanguageAndContinue('en')">
+      <span class="lang-choice-code">ENG</span>
+      <span class="lang-choice-name">English</span>
+      <span class="lang-choice-hint">Look and hold · Click</span>
+      <div class="lang-choice-dwell"></div>
+    </button>
+  </div>
 </div>
 
 <!-- CALIB -->
 <div class="screen hidden" id="calibScreen">
-  <button id="calibBackBtn" onclick="cancelCalibration()" style="position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;background:rgba(6,6,16,0.82);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#aaa;font-size:13px;padding:8px 14px;cursor:pointer;z-index:10;"></button>
-  <!-- Canlı kamera önizleme — hocanın doğrulaması için -->
-  <div id="calibCamWrap">
-    <video id="calibCamVideo" autoplay playsinline muted></video>
-  </div>
+  <button id="calibBackBtn" onclick="cancelCalibration()" style="position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;background:rgba(6,6,16,0.82);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#aaa;font-size:13px;padding:8px 14px;cursor:pointer;z-index:10;" id="calibBackBtn"></button>
 </div>
 <div id="calibDot"></div>
 <svg id="calibRing"></svg>
@@ -130,14 +157,14 @@
 <div id="howPanel">
   <div class="how-hdr">
     <h2>📖 How to Use EyeSense</h2>
-    <button class="btn-s" onclick="closeHow()" style="display:none">✕ Close</button>
+    <button class="btn-s" onclick="closeHow()" style="flex-shrink:0;">✕ Close</button>
   </div>
 
   <div class="how-step">
     <div class="how-num">1</div>
     <div class="how-body">
       <div class="how-title">Choose your input mode</div>
-      <div class="how-desc">Tap <b>Start Calibration</b> for eye gaze, or <b>Direct Entry</b> for touch mode. Use <b>Use Saved Calibration</b> if available.</div>
+      <div class="how-desc">On the start screen, tap <b>Start Calibration</b> for eye gaze, or <b>Direct Entry</b> to skip to touch mode. If you have a saved calibration, use <b>Use Saved Calibration</b> to continue.</div>
       <span class="how-tag blue">👁 Eye · ☝️ Touch · 💾 Saved</span>
     </div>
   </div>
@@ -145,71 +172,107 @@
   <div class="how-step">
     <div class="how-num">2</div>
     <div class="how-body">
-      <div class="how-title">Calibration</div>
-      <div class="how-desc">Dots appear one by one — look steadily at each until the ring fills. Choose <b>9 points</b> for a quick setup or <b>17 points</b> for higher accuracy. Data is saved on your device.</div>
-      <span class="how-tag">🎯 9 points (quick) · 17 points (precise)</span>
+      <div class="how-title">Calibrate (Eye Gaze only)</div>
+      <div class="how-desc">25 dots appear one by one. Look steadily at each until the ring fills. Takes ~60 seconds. Calibration data is saved on your device.</div>
+      <span class="how-tag">🎯 ~60 seconds · 25 points</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">3</div>
     <div class="how-body">
-      <div class="how-title">Dwell to Select</div>
-      <div class="how-desc">Look at any button and hold your gaze. When the yellow bar fills, the item is selected. Default duration is <b>2 seconds</b> — adjustable in Accessibility settings.</div>
-      <span class="how-tag">⏱ Look + hold = select · default 2s</span>
+      <div class="how-title">Dwell to select</div>
+      <div class="how-desc">Look at any button and hold your gaze. A yellow bar fills — when full the item is selected. Dwell duration is adjustable in Accessibility settings (default 1.2s).</div>
+      <span class="how-tag">⏱ Gaze + hold = select</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">4</div>
     <div class="how-body">
-      <div class="how-title">Iris Scroll</div>
-      <div class="how-desc">With a panel open, move your gaze to the <b>top or bottom edge</b> to scroll. The closer to the edge, the faster it scrolls.</div>
-      <span class="how-tag green">↕ Top/bottom edge = scroll</span>
+      <div class="how-title">Single blink = quick select</div>
+      <div class="how-desc">Enable <b>Single Blink Select</b> in Accessibility. With 8%+ dwell on an item, a single blink instantly selects it.</div>
+      <span class="how-tag">😉 Blink = select (optional)</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">5</div>
     <div class="how-body">
-      <div class="how-title">Phrase Board</div>
-      <div class="how-desc">Dwell on a phrase card to speak it aloud. Dwell on <b>+</b> to add your own phrases.</div>
-      <span class="how-tag blue">💬 Look → hold → speaks</span>
+      <div class="how-title">Double blink = go back</div>
+      <div class="how-desc">Blink twice within 480ms to close the current panel and return. Works everywhere — no settings needed.</div>
+      <span class="how-tag">😉😉 Double blink = back</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">6</div>
     <div class="how-body">
-      <div class="how-title">Keyboard</div>
-      <div class="how-desc">Dwell on each key to type. <b>🔊</b> reads your text aloud, <b>🎤</b> lets you dictate by voice.</div>
-      <span class="how-tag blue">⌨️ Dwell-type · 🔊 Read · 🎤 Dictate</span>
+      <div class="how-title">Iris scroll inside panels</div>
+      <div class="how-desc">With a panel open, move your gaze to the <b>top or bottom edge</b> to scroll. The deeper into the edge zone, the faster it scrolls. Works in Phrase Board, Accessibility and Smart Home panels.</div>
+      <span class="how-tag green">↕ Top/bottom edge = scroll</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">7</div>
     <div class="how-body">
-      <div class="how-title">What's Around Me?</div>
-      <div class="how-desc">Point your camera at your surroundings and scan — AI will describe what it sees out loud.</div>
-      <span class="how-tag">👁 Scan → AI describes</span>
+      <div class="how-title">Phrase Board</div>
+      <div class="how-desc">Dwell on a phrase card to speak it aloud. Dwell on the <b>+</b> button to add your own phrases with a custom emoji.</div>
+      <span class="how-tag blue">💬 Gaze → dwell → speaks</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">8</div>
     <div class="how-body">
-      <div class="how-title">Message Caregiver</div>
-      <div class="how-desc">Send a preset message to your saved caregiver. Dwell on 💬 to send automatically. Update caregiver info via "Edit Contacts".</div>
-      <span class="how-tag">📲 Send Message · Caregiver</span>
+      <div class="how-title">Keyboard</div>
+      <div class="how-desc">Dwell on each key to type. Dwell on word suggestions at the top to autocomplete. Press <b>🔊</b> to read aloud, <b>🎤</b> for voice dictation.</div>
+      <span class="how-tag blue">⌨️ Dwell-type · suggestions · TTS</span>
     </div>
   </div>
 
   <div class="how-step">
     <div class="how-num">9</div>
     <div class="how-body">
-      <div class="how-title">Tips for Best Accuracy</div>
-      <div class="how-desc">• Sit 40–55 cm from screen · • Good lighting · • Keep head still · • Recalibrate when changing device · • Accessibility → Accuracy Test to measure your error</div>
+      <div class="how-title">What's Around Me?</div>
+      <div class="how-desc">Point your camera at your surroundings — AI describes what it sees aloud. With an API key: full visual analysis. Without: OCR text-reading mode.</div>
+      <span class="how-tag">👁 Scan → AI describes</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">10</div>
+    <div class="how-body">
+      <div class="how-title">Quick Message</div>
+      <div class="how-desc">Call saved contacts or send preset messages. Dwell on 📞 or 💬 to act. Customize contacts via "Edit Contacts".</div>
+      <span class="how-tag">📲 Ara · Mesaj Gönder</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">11</div>
+    <div class="how-body">
+      <div class="how-title">Smart Home</div>
+      <div class="how-desc">Turn devices on/off (lights, blinds, thermostat, etc.) by dwelling on their card. Fully functional in demo mode; real devices require MQTT or REST API.</div>
+      <span class="how-tag">🏠 Dwell = toggle device</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">12</div>
+    <div class="how-body">
+      <div class="how-title">Panic Button</div>
+      <div class="how-desc">Dwell on the red button in the top-right of the main menu. An emergency alert with your location is sent to your caregiver.</div>
+      <span class="how-tag">🆘 Long gaze = emergency alert</span>
+    </div>
+  </div>
+
+  <div class="how-step">
+    <div class="how-num">13</div>
+    <div class="how-body">
+      <div class="how-title">Tips for best accuracy</div>
+      <div class="how-desc">• Sit 40–55 cm from screen · • Good face lighting · • Keep head still · • Recalibrate when changing device · • Use Accessibility → Accuracy Test to check your error</div>
       <span class="how-tag">💡 Distance · Light · Stillness</span>
     </div>
   </div>
@@ -224,7 +287,7 @@
 
   <!-- Büyük kapatma butonu — en üstte, kolay erişim -->
   <div id="vpTopBar">
-    <button class="vp-close-big" onclick="closeVision()" id="visionCloseBtn" style="display:none">
+    <button class="vp-close-big" onclick="closeVision()" id="visionCloseBtn">
       ✕ <span id="visionCloseLbl">Kapat</span>
       <div class="vp-close-dwell" id="visionCloseDwell"></div>
     </button>
@@ -298,28 +361,31 @@
     </button>
   </div>
 
-  <!-- Geri butonu — her zaman altta -->
-  <div id="vpBackRow">
-    <button id="vpBackBtn" onclick="closeVision()" ontouchstart="event.preventDefault();closeVision();">
-      ← <span id="vpBackLabel">Geri</span>
-    </button>
-  </div>
+</div>
 
+<!-- GLOBAL PANEL BACK BUTTON — shown on top of any open panel -->
+<div class="panel-back-btn" id="globalPanelBack" onclick="gazeBack()">
+  <span id="backBtnText">← Geri</span>
+  <span class="pb-hint" id="backHintText">👁 Bakıp bekle · 👁👁 Çift blink</span>
+  <div class="pb-dwell-bar" id="globalPanelBackDwell"></div>
 </div>
 
 <!-- MAIN UI — dwell enabled buttons -->
 <div id="mainUI">
-  <!-- Top bar: geri | logo | sos+dil -->
+  <!-- Top bar: logo + language -->
   <div id="mainTopBar">
-    <button class="main-back-btn" id="backToStartBtn" onclick="backToStart()">←</button>
     <div id="mainLogoWrap">
       <div id="mainLogoOrb">👁</div>
       <div id="mainLogoText"><span class="eye-part">Eye</span><span class="sense-part">Sense</span></div>
     </div>
-    <div></div>
+    <div id="mainLangBar">
+      <button class="btn-back-home" id="backToStartBtn" onclick="backToStart()">⬅ Başlangıç</button>
+      <button class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')">TR</button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">ENG</button>
+    </div>
   </div>
 
-  <!-- Location row -->
+  <!-- Location + Panic row -->
   <div id="infoRow">
     <div id="locationWidget">
       <span class="lw-pin">📍</span>
@@ -328,10 +394,7 @@
         <div class="lw-value" id="locValue">Alınıyor…</div>
       </div>
     </div>
-    <div id="miniCamWrap">
-      <video id="miniCamVideo" autoplay playsinline muted></video>
-      <div id="miniCamDot"></div>
-    </div>
+
   </div>
 
   <!-- Scrollable content -->
@@ -341,28 +404,28 @@
       <span id="mainSectionHint">Bakıp bekle</span>
     </div>
 
-    <div id="mainMenuGrid">
+    <div id="mainMenuGrid" class="main-three-stage">
       <button class="btn-sm" id="phraseBtn" data-action="openPhraseBoard">
         <span class="bsm-icon">💬</span><span class="bsm-label">Cümle Kartları</span><div class="btn-dwell"></div>
       </button>
       <button class="btn-sm" id="keyboardBtn" data-action="openKeyboard">
         <span class="bsm-icon">⌨️</span><span class="bsm-label">Klavye</span><div class="btn-dwell"></div>
       </button>
-      <button class="btn-sm" id="visionBtn" data-action="openVision">
-        <span class="bsm-icon">🔍</span><span class="bsm-label">Etrafımda Ne Var?</span><div class="btn-dwell"></div>
-      </button>
-      <button class="btn-sm" id="quickMsgBtn" data-action="openQuickMsg">
-        <span class="bsm-icon">📲</span><span class="bsm-label">Hızlı Mesaj</span><div class="btn-dwell"></div>
-      </button>
-      <button class="btn-sm" id="a11yBtn" data-action="openA11y">
-        <span class="bsm-icon">⚙️</span><span class="bsm-label">Erişilebilirlik</span><div class="btn-dwell"></div>
-      </button>
-      <button class="btn-sm" id="recalibBtn" data-action="startCalibration">
-        <span class="bsm-icon">🎯</span><span class="bsm-label">Kalibrasyon</span><div class="btn-dwell"></div>
+      <button class="btn-sm" id="mainMoreBtn" data-action="openMainMoreMenu">
+        <span class="bsm-icon">⋯</span><span class="bsm-label">Diğer</span><div class="btn-dwell"></div>
       </button>
     </div>
 
-
+    <div id="mainMenuSliders">
+      <div class="panel">
+        <b><span id="smLabel">Yumuşatma</span>: <span id="smVal">0.18</span></b>
+        <input type="range" id="smSlider" min="3" max="60" value="18">
+      </div>
+      <div class="panel">
+        <b><span id="dwLabel">Bekleme</span>: <span id="dwellVal">1.3</span>s</b>
+        <input type="range" id="dwellSlider" min="5" max="40" value="13">
+      </div>
+    </div>
   </div>
 </div>
 
@@ -388,175 +451,150 @@
     </div>
   </div>
   <div class="a11y-section">
-    <h3 id="a11yBlinkTitle">Kaydırma</h3>
+    <h3 id="a11yBlinkTitle">Göz Kırpma ve Kaydırma</h3>
     <div class="a11y-grid">
-      <div class="a11y-card" id="irisScrollCard" onclick="toggleIrisScroll()"><span class="ai">↕️</span><span class="at" id="irisScrollLabel">Iris Kaydırma</span><span class="al" id="irisScrollStatusLbl">On ✓</span></div>
-
+      <div class="a11y-card" id="irisScrollCard" onclick="toggleIrisScroll()"><span class="ai">↕️</span><span class="at" id="irisScrollLabel">Iris Kaydırma</span><span class="al">On ✓</span></div>
+      <div class="a11y-card" id="blinkNavCard" onclick="toggleBlinkNav()"><span class="ai">👁</span><span class="at" id="blinkNavLabel">Çift Blink = Geri</span><span class="al" id="blinkNavSub">Her zaman aktif</span></div>
+      <div class="a11y-card" id="blinkSelectCard" onclick="toggleBlinkSelect()"><span class="ai">😉</span><span class="at" id="blinkSelectTitle">Tek Blink = Seç</span><span class="al" id="blinkSelectLabel">Kapalı</span></div>
+      <div class="a11y-card" id="blinkSensCard" onclick="cycleBlink()"><span class="ai">🎯</span><span class="at" id="blinkSensTitle">Blink Hassasiyeti</span><span class="al" id="blinkSensLabel">Normal</span></div>
+      <div class="a11y-card" id="wakeWordCard" onclick="toggleWakeWord()"><span class="ai">🎙️</span><span class="at" id="wakeWordTitle">Uyandırma Komutu</span><span class="al" id="wakeWordLabel">Kapalı</span></div>
     </div>
   </div>
-  <!-- ── HASSASIYET AYARLARI ── -->
-  <div class="a11y-section a11y-section-sens">
-    <h3 id="a11ySensTitle">🎛 Hassasiyet Ayarları</h3>
-
-    <div class="a11y-slider-card">
-      <div class="asc-header">
-        <span class="asc-icon">⏱</span>
-        <div class="asc-info">
-          <div class="asc-label" id="a11yDwellLabel">Bekleme Süresi</div>
-          <div class="asc-value"><b id="a11yDwellVal">1.2</b> s</div>
-        </div>
-      </div>
-      <div class="asc-row">
-        <button class="asc-btn" onclick="a11yAdjDwell(-1)">−</button>
-        <input type="range" id="a11yDwellSl" min="5" max="50" value="12"
-          oninput="DWELL_MS=this.value*100;document.getElementById('a11yDwellVal').textContent=(DWELL_MS/1000).toFixed(1);">
-        <button class="asc-btn" onclick="a11yAdjDwell(1)">+</button>
-      </div>
-    </div>
-
-    <div class="a11y-slider-card">
-      <div class="asc-header">
-        <span class="asc-icon">👁</span>
-        <div class="asc-info">
-          <div class="asc-label" id="a11yAlphaLabel">Göz Yumuşatma</div>
-          <div class="asc-value"><b id="a11yAlphaVal">0.10</b></div>
-        </div>
-      </div>
-      <div class="asc-row">
-        <button class="asc-btn" onclick="a11yAdjAlpha(-1)">−</button>
-        <input type="range" id="a11yAlphaSl" min="2" max="60" value="5"
-          oninput="ALPHA=this.value/100;document.getElementById('a11yAlphaVal').textContent=ALPHA.toFixed(2);localStorage.setItem('es_alpha',ALPHA);">
-        <button class="asc-btn" onclick="a11yAdjAlpha(1)">+</button>
-      </div>
-    </div>
-
-    <div class="a11y-slider-card">
-      <div class="asc-header">
-        <span class="asc-icon">⌨️</span>
-        <div class="asc-info">
-          <div class="asc-label" id="kbSensLabel">Klavye Hassasiyeti</div>
-          <div class="asc-value"><b id="kbSensVal">Normal</b></div>
-        </div>
-      </div>
-      <div class="asc-row">
-        <button class="asc-btn" onclick="a11yAdjKb(-1)">−</button>
-        <input type="range" id="kbSensSl" min="1" max="3" value="2" step="1" oninput="setKbSensitivity(this.value)">
-        <button class="asc-btn" onclick="a11yAdjKb(1)">+</button>
-      </div>
-    </div>
+  <div class="sl-row">
+    <label id="kbSensLabel">Klavye hassasiyeti: <b id="kbSensVal">Normal</b></label>
+    <input type="range" id="kbSensSl" min="1" max="3" value="2" step="1" oninput="setKbSensitivity(this.value)">
+  </div>
+  <div class="sl-row">
+    <label id="a11yDwellLabel">Bekleme süresi: <b id="a11yDwellVal">1.3</b> s</label>
+    <input type="range" id="a11yDwellSl" min="5" max="50" value="13"
+      oninput="DWELL_MS=this.value*100;document.getElementById('a11yDwellVal').textContent=(DWELL_MS/1000).toFixed(1);document.getElementById('dwellVal').textContent=(DWELL_MS/1000).toFixed(1);">
+  </div>
+  <div class="sl-row">
+    <label id="a11yAlphaLabel">Göz yumuşatma: <b id="a11yAlphaVal">0.18</b></label>
+    <input type="range" id="a11yAlphaSl" min="2" max="60" value="18"
+      oninput="ALPHA=this.value/100;document.getElementById('a11yAlphaVal').textContent=ALPHA.toFixed(2);document.getElementById('smVal').textContent=ALPHA.toFixed(2);">
   </div>
 
   <!-- ── ADVANCED TOOLS ── -->
+  <div class="a11y-section" id="advancedToolsSection">
+    <h3 id="advToolsTitle">🔧 Gelişmiş Araçlar</h3>
+    <div class="adv-tools-grid">
+      <button class="adv-tool-btn" id="a11yDiagBtn" onclick="closeA11y();openDiag();">
+        <span class="atb-icon">🔬</span>
+        <div class="atb-body">
+          <div class="atb-title" id="advDiagTitle">Tanı</div>
+          <div class="atb-sub" id="advDiagSub">Teknik sorun analizi</div>
+        </div>
+        <span class="atb-arrow">›</span>
+      </button>
+      <button class="adv-tool-btn" id="a11yEvalBtn" onclick="closeA11y();startEvaluation();">
+        <span class="atb-icon">📊</span>
+        <div class="atb-body">
+          <div class="atb-title" id="advEvalTitle">Doğruluk Testi</div>
+          <div class="atb-sub" id="advEvalSub">Göz izleme doğruluğunu ölç</div>
+        </div>
+        <span class="atb-arrow">›</span>
+      </button>
+      <button class="adv-tool-btn" id="a11yHowBtn" onclick="closeA11y();openHow();">
+        <span class="atb-icon">📖</span>
+        <div class="atb-body">
+          <div class="atb-title" id="advHowTitle">Nasıl Kullanılır</div>
+          <div class="atb-sub" id="advHowSub">Kullanım kılavuzu</div>
+        </div>
+        <span class="atb-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <button class="btn-p" id="a11yCloseBtn" onclick="closeA11y()">✓ Kapat</button>
 </div>
 
 <!-- KEYBOARD -->
 <div id="kbPanel">
+  <!-- 1. Text display — always on top, always visible -->
+  <div id="kbTextArea"><span class="kb-cursor"></span></div>
 
-  <!-- Top bar: text area + cam (cam sağda) -->
+  <!-- 2. Top bar: mode toggle + title + close -->
   <div id="kbTopBar">
-    <div id="kbTextWrap">
-      <div id="kbTypingLabel">YAZILIYOR</div>
-      <div id="kbTextArea"><span class="kb-cursor"></span></div>
+    <div id="kbModeToggle">
+      <button class="kbmt-btn active" id="kbModeEye"   onclick="setKbMode('eye')">👁 Gaze</button>
+      <button class="kbmt-btn"        id="kbModeTouch" onclick="setKbMode('touch')">☝ Touch</button>
     </div>
-    <div id="kbCamWrap">
-      <video id="kbCamVideo" autoplay playsinline muted></video>
-      <div id="kbGazeDot"></div>
-    </div>
+    <span id="kbTopTitle">EyeSense Keyboard</span>
+    <button id="kbCloseBtn2">✕ Close</button>
   </div>
 
-  <!-- Word suggestions -->
+  <!-- 3. Word suggestions -->
   <div id="kbSugg"></div>
 
-  <!-- Main content: blocks or keys (built by JS) -->
-  <div id="kbMain"></div>
+  <!-- 4. Keys -->
+  <div id="kbRows"></div>
 
-  <!-- Action bar: Oku + Ses + Geri -->
+  <!-- 5. Action bar -->
   <div id="kbActions">
-    <button class="kb-act kb-act-speak" id="kbTTS">🔊 Oku</button>
-    <button class="kb-act kb-act-voice" id="kbVoice">🎤 Ses</button>
-    <button class="kb-act kb-act-menu"  id="kbMenuBtn">← Geri</button>
+    <button class="kb-act" id="kbTTS">🔊 Speak</button>
+    <button class="kb-act" id="kbVoice">🎤 Voice</button>
+    <button class="kb-act" id="kbBlinkToggle">👁 Blink</button>
   </div>
 
-  <button id="kbCloseBtn2" style="display:none">✕</button>
-</div>
-
-<!-- Voice overlay — kbPanel dışında, tam ekran için body seviyesinde -->
-<div id="kbVoiceStatus">
-  <span class="vs-icon">🎤</span>
-  <span class="vs-msg" id="kbVoiceMsg">Dinliyorum…</span>
-  <span class="vs-interim" id="kbVoiceInterim"></span>
+  <!-- Voice status overlay -->
+  <div id="kbVoiceStatus">
+    <span class="vs-icon">🎤</span>
+    <span class="vs-msg" id="kbVoiceMsg">Listening…</span>
+    <span class="vs-interim" id="kbVoiceInterim"></span>
+  </div>
 </div>
 
 <!-- QUICK MSG PANEL -->
 <div id="quickMsgPanel">
-  <div class="qm-hdr">
-    <h2 id="qmTitle">📲 Hızlı Mesaj</h2>
-    <button class="btn-s" onclick="closeQuickMsg()" style="display:none">✕</button>
+  <div class="qm-top">
+    <h2 id="qmTitle">📲 Quick Message</h2>
+    <button class="qm-close-big" onclick="closeQuickMsg()">✕ Close</button>
   </div>
 
-  <!-- Contacts -->
-  <div class="qm-contact-grid" id="qmContacts">
-    <div class="qm-contact" id="qmc0">
-      <div class="qmc-avatar" id="qmc0av">👤</div>
-      <div class="qmc-info">
-        <div class="qmc-name" id="qmc0name">Kişi 1</div>
-        <div class="qmc-role" id="qmc0role">Refakatçi</div>
-      </div>
-      <div class="qmc-actions">
-        <button class="qmc-action-btn call" onclick="qmCall(0)" style="display:none">📞</button>
-        <button class="qmc-action-btn msg"  onclick="qmSms(0)"  style="display:none">💬</button>
-      </div>
-      <div class="qm-dwell" id="qmc0dwell"></div>
+  <div class="qm-contact-card" id="qmContacts">
+    <div class="qmc-avatar" id="qmc0av">👤</div>
+
+    <div class="qmc-info">
+      <div class="qmc-name" id="qmc0name">Kişi 1</div>
+      <div class="qmc-role" id="qmc0role">Caregiver</div>
     </div>
 
-
+    <div class="qmc-actions">
+      <button class="qmc-action-btn call" onclick="qmCall(0)">📞</button>
+      <button class="qmc-action-btn msg" onclick="qmSms(0)">💬</button>
+    </div>
   </div>
 
-  <!-- Quick messages -->
-  <div class="qm-section-title" id="qmMsgLabel">Hazır Mesajlar</div>
-  <div class="qm-msgs" id="qmMsgsList">
-    <div class="qm-msg" data-idx="0"><span class="qmm-icon">🆘</span><span class="qmm-text">Yardıma ihtiyacım var, lütfen gel.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="1"><span class="qmm-icon">😊</span><span class="qmm-text">İyiyim, merak etme.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="2"><span class="qmm-icon">🍽️</span><span class="qmm-text">Açım, yemek getirir misin?</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="3"><span class="qmm-icon">💊</span><span class="qmm-text">İlaç zamanım geldi.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="4"><span class="qmm-icon">🚿</span><span class="qmm-text">Banyoya gitmem lazım.</span><div class="qm-dwell"></div></div>
-    <div class="qm-msg" data-idx="5"><span class="qmm-icon">😴</span><span class="qmm-text">Uyumak istiyorum.</span><div class="qm-dwell"></div></div>
-  </div>
+  <div class="qm-section-title" id="qmMsgLabel">QUICK MESSAGES</div>
 
-  <!-- Edit contacts button -->
-  <button class="btn-s" style="margin-top:16px;width:100%;max-width:540px;align-self:center;" onclick="openQmEdit()">✏️ <span id="qmEditLabel">Kişileri Düzenle</span></button>
+  <div class="qm-msgs" id="qmMsgsList"></div>
 
-  <!-- Custom messages section -->
-  <div class="qm-section-title" id="qmCustomLabel" style="margin-top:16px;">Özel Cümleler</div>
-  <div class="qm-msgs" id="qmCustomList"></div>
-  <button class="btn-s" id="qmAddCustomBtn" style="margin-top:8px;width:100%;max-width:540px;align-self:center;" onclick="openQmCustomAdd()">
-    ➕ <span id="qmAddCustomLabel">Cümle Ekle</span>
-  </button>
+  <button class="qm-back-big" onclick="closeQuickMsg()">← Back</button>
 </div>
 
 <!-- PHRASE BOARD -->
 <div id="phraseBoard">
   <div class="pb-hdr">
-    <b id="pbHeaderText">💬 What do you want to say?</b>
-    <button class="btn-s" id="pbCloseBtn" style="display:none">✕ Close</button>
+    <b id="pbTitle">💬 What do you want to say?</b>
   </div>
   <div class="pb-grid" id="pbGrid"></div>
 </div>
 <!-- Panel back buttons (shared, shown per panel) -->
 <div id="output">
   <div id="outputText"></div>
-  <button id="outputClose" style="display:none">✕</button>
+  <button id="outputClose">✕</button>
 </div>
 
 <!-- ADD PHRASE MODAL -->
 <div id="addModal">
   <div class="modal-box">
-    <h3 id="modalTitle">➕ New Phrase</h3>
-    <div><div style="font-size:11px;color:#555;margin-bottom:5px;" id="modalEmojiLabel">Emoji:</div><div class="emoji-row" id="emojiRow"></div></div>
-    <input type="text" id="phraseInput" placeholder="Type your phrase..." id="phraseInputPlaceholder" maxlength="40">
+    <h3>➕ New Phrase</h3>
+    <div><div style="font-size:11px;color:#555;margin-bottom:5px;">Emoji:</div><div class="emoji-row" id="emojiRow"></div></div>
+    <input type="text" id="phraseInput" placeholder="Type your phrase..." maxlength="40">
     <div class="modal-btns">
-      <button class="btn-p" id="addConfirm" style="flex:1" data-tr="Ekle" data-en="Add">Add</button>
-      <button class="btn-s" id="addCancel" style="flex:1" data-tr="İptal" data-en="Cancel">Cancel</button>
+      <button class="btn-p" id="addConfirm" style="flex:1">Add</button>
+      <button class="btn-s" id="addCancel" style="flex:1">Cancel</button>
     </div>
   </div>
 </div>
@@ -573,13 +611,23 @@
   </div>
 </div>
 
-
+<!-- IOT -->
+<div id="iotPanel">
+  <h2>🏠 Smart Home</h2>
+  <div class="iot-badge" style="font-size:11px;line-height:1.7;">
+    <b>Demo mode</b> — UI and dwell mechanism fully working.<br>
+    For real device: <b>MQTT (broker:1883)</b> or <b>REST API (HTTP POST)</b>.<br>
+    <span style="color:#666;font-size:10px;">Add mqtt.publish() / fetch() to the renderIot() toggle handler.</span>
+  </div>
+  <div class="iot-grid" id="iotGrid"></div>
+  <button class="btn-s" id="iotCloseBtn">✕ Close</button>
+</div>
 
 <!-- DIAGNOSTICS PANEL -->
 <div id="diagPanel" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:24px 20px;flex-direction:column;gap:14px;align-items:center;">
   <h2 style="font-family:'Syne',sans-serif;font-size:18px;width:100%;max-width:480px;">🔬 Diagnostics</h2>
   <div id="diagContent" style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px;font-size:13px;"></div>
-  <button class="btn-s" onclick="closeDiag()" style="display:none">✕ Close</button>
+  <button class="btn-s" onclick="closeDiag()">✕ Close</button>
 </div>
 
 <!-- ARCHITECTURE PANEL -->
@@ -600,7 +648,7 @@
         <div style="color:#444;padding-left:16px;">↓ &lt;1ms</div>
         <div style="color:#aaa;">🧮 <b style="color:#fff;">Gaze Estimation</b> <span style="color:#555;">→ polyExpand(f,deg=2) → ridge predict → (tx,ty) + yaw/pitch Δ</span></div>
         <div style="color:#444;padding-left:16px;">↓ &lt;1ms</div>
-        <div style="color:#aaa;">📐 <b style="color:#fff;">Calibration Mapping</b> <span style="color:#555;">→ Adaptive 2-phase (9–17 pts) · ridge (λ=0.001) · degree-2 poly · online update</span></div>
+        <div style="color:#aaa;">📐 <b style="color:#fff;">Calibration Mapping</b> <span style="color:#555;">→ Fixed 25-point grid · ridge (λ=0.001) · degree-2 poly · online update</span></div>
         <div style="color:#444;padding-left:16px;">↓ ~15ms</div>
         <div style="color:#aaa;">👁‍🗨 <b style="color:#fff;">Blink Engine</b> <span style="color:#555;">→ EAR state machine · single blink = select · double blink = back</span></div>
         <div style="color:#444;padding-left:16px;">↓</div>
@@ -622,25 +670,23 @@
         <b>Poly expand (degree-2):</b> f' = [f, cross-terms] → 20 dims total<br>
         <b>Ridge fit:</b> w = (XᵀX + λI)⁻¹ Xᵀy, λ=0.001, fitted for modelX and modelY<br>
         <b>Predict:</b> screen_x = w⃗·[1, f'] &nbsp; (predict() &lt;1ms)<br>
-        <b>Head comp:</b> tx += yaw × W × 0.06 &nbsp; ty += pitch × H × 0.045<br>
-        <b>Online update:</b> blend(0.85·w_old + 0.15·w_new) after 8 dwell events
+        <b>Head comp:</b> tx += yaw × W × 0.03 &nbsp; ty += pitch × H × 0.02<br>
+        <b>Online update:</b> kapalı — stabil test için model kullanımda değişmez
       </div>
     </div>
     <!-- Validation / dataset note -->
     <div style="background:rgba(34,221,136,0.06);border:1px solid rgba(34,221,136,0.2);border-radius:12px;padding:14px 16px;">
       <div style="color:#22dd88;font-size:11px;letter-spacing:.07em;margin-bottom:8px;font-family:'Syne',sans-serif;">VALIDATION & ACCURACY</div>
       <div style="color:#aaa;font-size:11px;line-height:1.9;">
-        <b style="color:#fff;">Approach: Adaptive 2-Phase Calibration + Online Learning (v13)</b><br>
-        Phase 1 collects 9 distributed points (corners + edges + center). After phase 1 the model
-        is fit and mean error is measured. If error ≤ 2.2 cm → calibration ends early (~35s).
-        Otherwise Phase 2 adds 8 inner refinement points for full 17-point accuracy.<br><br>
-        <b>Key improvements in v13:</b><br>
-        · Adaptive early exit — good accuracy = 9 pts, needs refinement = 17 pts<br>
+        <b style="color:#fff;">Approach: Fixed 25-Point Calibration + Stable Mode (Online Learning OFF)</b><br>
+        A fixed 5×5 grid collects 25 distributed screen points. The model is trained after all points, so edge and corner regions are represented more evenly.<br><br>
+        <b>Key improvements in v15:</b><br>
+        · Fixed 25-point grid — better coverage for edge/corner drift<br>
         · Animated dot transitions — dot slides smoothly, eyes follow naturally<br>
         · Adaptive ring speed — slower for noisy/tremor users, faster for stable<br>
-        · Interim model update every 3 pts from pt 6 onward (was every 4)<br>
-        · Online learning → accuracy improves with usage, no recalibration needed<br>
-        
+        · Model training only after 25/25 points — no 6/9/16 interim training<br>
+        · Online learning kapalı → kullanım sırasında model kendini bozmaz<br>
+        · Single blink = select, double blink = back — universal across all panels<br>
         · Iris scroll — gaze top/bottom 14% of screen scrolls active container<br><br>
         <b style="color:#ffaa00;">Limitation:</b> Cross-user generalisability not tested.
         Each user must complete their own calibration.<br><br>
@@ -672,28 +718,28 @@
       </div>
     </div>
   </div>
-  <button class="btn-s" onclick="closeArch()" style="display:none">✕ Close</button>
+  <button class="btn-s" onclick="closeArch()">✕ Close</button>
 </div>
 
 <div id="statusBar"></div>
 <div id="irisQ"></div>
 
-<!-- Capacitor TTS Plugin -->
-<script type="module">
-  try {
-    const { TextToSpeech } = await import('@capacitor-community/text-to-speech');
-    window.CapTTS = TextToSpeech;
-  } catch(e) {
-    // Tarayıcıda çalışırken plugin yoksa hata verme, Web Speech API kullanılır
-    console.warn('Capacitor TTS plugin yüklenemedi, Web Speech API kullanılacak.');
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js">
+
+// v38: Test sırasında mouse ile çift tıklama yapılırsa da MORE → ANA MENÜ çalışsın.
+document.addEventListener('dblclick', function(e){
+  if(goMainFromMoreV38()){
+    e.preventDefault();
+    e.stopPropagation();
   }
+}, true);
+
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <!-- TensorFlow.js + COCO-SSD for object detection -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="eyesense.js"></script>
+<script src="eyesense-web.js"></script>
 </body>
 </html>

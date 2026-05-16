@@ -2678,77 +2678,1334 @@ body.lg #locationWidget .lw-value { font-size: 14px !important; }
   text-align: center !important;
 }
 
-/* ── Inline styles migrated from <style> block in eyesense.html ── */
-#miniCamWrap{flex-shrink:0;width:72px;display:none;flex-direction:column;align-items:center;justify-content:center;position:relative;border-radius:14px;overflow:hidden;border:1.5px solid rgba(68,136,255,0.3);box-shadow:0 0 12px rgba(68,136,255,0.15);background:#000;}
+/* ── Inline styles from eyesense.html ── */
+/* HOCANIN GÖRMESİ İÇİN: sağ altta küçük kamera önizlemesi */
+#teacherCamBox{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  width:260px;
+  height:205px;
+  border:2px solid rgba(56,189,248,.95);
+  border-radius:18px;
+  background:rgba(2,6,23,.88);
+  box-shadow:0 0 24px rgba(56,189,248,.35);
+  overflow:hidden;
+  z-index:9998;
+  pointer-events:none;
+}
+#teacherCamTitle{
+  position:absolute;
+  top:8px;
+  left:10px;
+  right:10px;
+  z-index:3;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(0,0,0,.55);
+  color:#e0f2fe;
+  font:700 11px 'Syne',Arial,sans-serif;
+  letter-spacing:.02em;
+  text-align:center;
+}
+#teacherCamVideo,#teacherCamCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#teacherCamVideo{
+  transform:scaleX(-1);
+  background:#000;
+}
+#teacherCamCanvas{
+  z-index:2;
+}
+#teacherCamInfo{
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:8px;
+  z-index:3;
+  padding:7px 9px;
+  border-radius:12px;
+  background:rgba(2,6,23,.72);
+  border:1px solid rgba(148,163,184,.24);
+  color:#e5e7eb;
+  font:700 9.5px 'DM Sans',Arial,sans-serif;
+  line-height:1.45;
+  text-align:left;
+  white-space:normal;
+  backdrop-filter:blur(8px);
+}
+#dot{
+  box-shadow:0 0 18px rgba(255,0,0,.95),0 0 40px rgba(255,0,0,.35)!important;
+}
+@media(max-width:700px){
+  #teacherCamBox{width:190px;height:150px;right:10px;bottom:10px;border-radius:14px;}
+  #teacherCamTitle{font-size:9px;padding:4px 6px;}
+  #teacherCamInfo{font-size:9px;padding:4px 6px;}
+}
 
-/* ── Panel Geri Butonu — sağ üst köşe, büyük dwell hedefi */
-#panelBackBtn {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(10,10,20,0.85);
-  border: 2px solid rgba(255,255,255,0.2);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.5);
-  touch-action: manipulation;
-  transition: border-color 0.15s, background 0.15s;
-}
-#panelBackBtn.gazing {
-  border-color: rgba(255,200,0,0.8);
-  background: rgba(255,200,0,0.12);
-}
-.pbb-icon {
-  font-size: 26px;
-  color: rgba(255,255,255,0.9);
-  font-weight: 700;
-  pointer-events: none;
-  user-select: none;
-}
-.pbb-dwell {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 5px;
-  background: rgba(255,255,255,0.08);
-}
-.pbb-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #ffd700, #ff8c00);
-  transition: width 0.05s linear;
-}
-#miniCamVideo{width:72px;height:54px;object-fit:cover;display:block;transform:scaleX(-1);}
-#miniCamDot{position:absolute;bottom:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#22dd88;box-shadow:0 0 6px rgba(34,221,136,0.8);animation:dotPulse 2s ease-in-out infinite;}
-#calibCamWrap{position:fixed;top:max(16px,env(safe-area-inset-top));right:12px;z-index:400;display:none;}
-#calibCamVideo{width:130px;height:73px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,0.15);transform:scaleX(-1);background:#000;display:block;box-shadow:0 2px 12px rgba(0,0,0,0.6);}
-@media(max-width:500px){#calibCamVideo{width:85px;height:48px;}#miniCamWrap{width:58px;}#miniCamVideo{width:58px;height:44px;}}
 
-/* ── Klavye telefon optimizasyonu — detaylar eyesense.css içinde */
-#kbCamWrap  { display: none !important; }
 
-/* ── Vision panel geri butonu */
-#vpBackRow {
-  width: 100%;
-  padding: 8px 16px 16px;
-  box-sizing: border-box;
+/* ══════════════════════════════════════════════════════
+   MAIN MENU SAFE CARD LAYOUT — kalibrasyona dokunmadan 6 kartı büyütür
+   NOT: body, #mainUI, .screen, video, #dot, #calibDot ölçülerine dokunmaz.
+   ══════════════════════════════════════════════════════ */
+
+#mainContent{
+  width:100% !important;
+  max-width:1600px !important;
+  margin:0 auto !important;
+  padding:0 22px 18px !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
 }
-#vpBackBtn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1.5px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.8);
-  font-family: 'Syne', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
+
+#mainSectionRow{
+  width:100% !important;
+  max-width:none !important;
+  margin:8px auto 12px !important;
+  padding:0 2px !important;
+  box-sizing:border-box !important;
+}
+
+#mainMenuGrid{
+  width:100% !important;
+  max-width:none !important;
+  margin:0 auto 14px !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(2, minmax(0, 1fr)) !important;
+  gap:18px !important;
+  height:clamp(330px, 42vh, 390px) !important;
+}
+
+#mainMenuGrid .btn-sm{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  padding:18px 16px !important;
+  border-radius:24px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+}
+
+#mainMenuGrid .bsm-icon{
+  font-size:clamp(38px, 3.6vw, 56px) !important;
+  line-height:1 !important;
+}
+
+#mainMenuGrid .bsm-label{
+  font-size:clamp(20px, 1.55vw, 28px) !important;
+  line-height:1.12 !important;
+  text-align:center !important;
+  font-weight:800 !important;
+}
+
+#mainMenuGrid .btn-dwell{
+  height:8px !important;
+  border-radius:999px !important;
+}
+
+#mainMenuSliders{
+  width:100% !important;
+  max-width:980px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:16px !important;
+  box-sizing:border-box !important;
+}
+
+#mainMenuSliders .panel{
+  min-height:46px !important;
+  border-radius:16px !important;
+  padding:8px 16px !important;
+  box-sizing:border-box !important;
+}
+
+/* Debug kamera ekrandaki hedefleri kapatmasın diye biraz daha küçük */
+#teacherCamBox{
+  width:240px !important;
+  height:188px !important;
+  right:16px !important;
+  bottom:16px !important;
+}
+
+@media (max-width:1100px){
+  #mainContent{padding:0 16px 16px !important;}
+  #mainMenuGrid{
+    height:clamp(300px, 40vh, 350px) !important;
+    gap:14px !important;
+  }
+  #mainMenuGrid .btn-sm{
+    border-radius:22px !important;
+    padding:14px 12px !important;
+  }
+  #mainMenuGrid .bsm-icon{font-size:38px !important;}
+  #mainMenuGrid .bsm-label{font-size:20px !important;}
+  #teacherCamBox{width:220px !important;height:172px !important;}
+}
+
+@media (max-width:760px){
+  #mainContent{padding:0 12px 18px !important;}
+  #mainMenuGrid{
+    height:auto !important;
+    grid-template-columns:1fr 1fr !important;
+    grid-template-rows:none !important;
+  }
+  #mainMenuGrid .btn-sm{height:140px !important;}
+  #mainMenuSliders{grid-template-columns:1fr !important;}
+}
+
+
+
+/* ══════════════════════════════════════════════════════
+   PHRASE BOARD 9 KART — 3x3 büyük hedef düzeni
+   ══════════════════════════════════════════════════════ */
+#phraseBoard{
+  padding:18px 16px 84px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+#phraseBoard .pb-hdr{
+  flex:0 0 auto !important;
+  margin-bottom:14px !important;
+  text-align:center !important;
+}
+#pbGrid,
+.pb-grid{
+  width:100% !important;
+  height:calc(100vh - 190px) !important;
+  max-height:690px !important;
+  min-height:500px !important;
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(3, minmax(0, 1fr)) !important;
+  gap:18px !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+#pbGrid .phrase-btn,
+.pb-grid .phrase-btn{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  border-radius:26px !important;
+  padding:22px 18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:12px !important;
+  box-sizing:border-box !important;
+}
+#pbGrid .pb-i,
+.pb-grid .pb-i{
+  font-size:clamp(42px, 4.2vw, 70px) !important;
+  line-height:1 !important;
+}
+#pbGrid .pb-t,
+.pb-grid .pb-t{
+  font-size:clamp(18px, 1.45vw, 28px) !important;
+  line-height:1.18 !important;
+  font-weight:800 !important;
+  text-align:center !important;
+}
+#pbGrid .ph-del,
+.pb-grid .ph-del,
+#pbGrid .ph-add,
+.pb-grid .ph-add{
+  display:none !important;
+}
+@media(max-width:900px){
+  #pbGrid,.pb-grid{gap:12px !important;height:calc(100vh - 165px) !important;min-height:420px !important;}
+  #pbGrid .phrase-btn,.pb-grid .phrase-btn{border-radius:20px !important;padding:16px 10px !important;}
+}
+
+
+
+/* ══════════════════════════════════════════════════════
+   KLAVYE TAM EKRAN — AGGRESSIVE FIX
+   Sorun: eski CSS'te #kbRows / .kb-row max-width ile ortada dar kalıyordu.
+   Bu blok max-width sınırlarını kırar ve tuşları tüm ekrana yayar.
+   ══════════════════════════════════════════════════════ */
+#kbPanel{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  max-width:none !important;
+  max-height:none !important;
+  padding:0 !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  background:#050816 !important;
+  overflow:hidden !important;
+  z-index:520 !important;
+}
+
+#kbTextArea{
+  width:100vw !important;
+  max-width:none !important;
+  height:9vh !important;
+  min-height:62px !important;
+  max-height:92px !important;
+  padding:12px 24px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  white-space:nowrap !important;
+  font-size:clamp(28px, 2.7vw, 50px) !important;
+  font-weight:900 !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+}
+
+#kbTopBar{
+  width:100vw !important;
+  max-width:none !important;
+  height:6vh !important;
+  min-height:44px !important;
+  max-height:58px !important;
+  padding:6px 12px !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:auto 1fr auto !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+
+#kbTopTitle{
+  text-align:center !important;
+  font-size:clamp(14px, 1.2vw, 20px) !important;
+  font-weight:900 !important;
+  opacity:.75 !important;
+}
+
+#kbModeToggle{display:flex !important;gap:8px !important;}
+.kbmt-btn,
+#kbCloseBtn2{
+  min-height:34px !important;
+  padding:7px 14px !important;
+  border-radius:13px !important;
+  font-size:clamp(13px, 1.1vw, 17px) !important;
+  font-weight:900 !important;
+}
+
+#kbSugg{
+  width:100vw !important;
+  max-width:none !important;
+  height:7vh !important;
+  min-height:52px !important;
+  max-height:74px !important;
+  padding:8px 12px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  border-top:1px solid rgba(255,255,255,.05) !important;
+  border-bottom:1px solid rgba(255,255,255,.06) !important;
+}
+
+#kbSugg .kb-sg,
+#kbSugg button,
+.kb-sg{
+  flex:1 0 auto !important;
+  min-width:190px !important;
+  height:100% !important;
+  max-height:58px !important;
+  padding:0 22px !important;
+  border-radius:999px !important;
+  font-size:clamp(22px, 1.9vw, 34px) !important;
+  font-weight:900 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  white-space:nowrap !important;
+}
+
+#kbRows{
+  flex:1 1 auto !important;
+  width:100vw !important;
+  max-width:none !important;
+  min-width:100vw !important;
+  min-height:0 !important;
+  padding:14px 18px 10px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:stretch !important;
+  align-items:stretch !important;
+  gap:12px !important;
+  overflow:hidden !important;
+}
+
+.kb-row{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  flex:1 1 0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  gap:12px !important;
+  box-sizing:border-box !important;
+}
+
+.kb-key{
+  flex:1 1 0 !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  padding:0 6px !important;
+  box-sizing:border-box !important;
+  border-radius:24px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  position:relative !important;
+  overflow:hidden !important;
+  font-size:clamp(38px, 3.8vw, 72px) !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  background:rgba(255,255,255,.075) !important;
+  border:2px solid rgba(255,255,255,.14) !important;
+  box-shadow:0 8px 0 rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.kb-key.wide{
+  flex:1.8 1 0 !important;
+  font-size:clamp(28px, 2.8vw, 54px) !important;
+}
+
+.kb-key.xwide{
+  flex:8 1 0 !important;
+}
+
+.kb-key.fn{
+  background:rgba(99,102,241,.12) !important;
+  border-color:rgba(148,163,184,.22) !important;
+}
+
+.kb-key.gazing,
+.kb-key.hovered,
+.kb-key:hover{
+  transform:scale(1.025) !important;
+  border-color:rgba(56,189,248,.98) !important;
+  box-shadow:0 0 34px rgba(56,189,248,.48), 0 8px 0 rgba(0,0,0,.25) !important;
+}
+
+.kb-key .dwell-ov{
+  position:absolute !important;
+  left:0 !important;
+  bottom:0 !important;
+  height:10px !important;
+  width:0%;
+  border-radius:999px !important;
+  background:linear-gradient(90deg,#facc15,#fb7185) !important;
+  z-index:3 !important;
+}
+
+#kbActions{
+  width:100vw !important;
+  max-width:none !important;
+  height:10vh !important;
+  min-height:72px !important;
+  max-height:96px !important;
+  padding:10px 16px 14px !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr 1fr !important;
+  gap:16px !important;
+  border-top:1px solid rgba(255,255,255,.08) !important;
+}
+
+.kb-act{
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  border-radius:22px !important;
+  font-size:clamp(28px, 2.8vw, 52px) !important;
+  font-weight:900 !important;
+}
+
+/* Debug kamera tuşları kapatmasın */
+#teacherCamBox{
+  width:190px !important;
+  height:150px !important;
+  right:16px !important;
+  bottom:16px !important;
+  opacity:.88 !important;
+}
+
+@media(max-height:760px){
+  #kbTextArea{height:7.5vh !important;min-height:50px !important;padding:8px 18px !important;font-size:clamp(24px,2.4vw,40px) !important;}
+  #kbTopBar{height:5vh !important;min-height:38px !important;padding:4px 10px !important;}
+  #kbSugg{height:6vh !important;min-height:44px !important;padding:6px 10px !important;}
+  #kbSugg .kb-sg,#kbSugg button,.kb-sg{min-width:170px !important;font-size:clamp(20px,1.8vw,30px) !important;}
+  #kbRows{padding:10px 14px 8px !important;gap:10px !important;}
+  .kb-row{gap:10px !important;}
+  .kb-key{border-radius:20px !important;font-size:clamp(34px,3.4vw,62px) !important;}
+  .kb-key.wide{font-size:clamp(26px,2.5vw,48px) !important;}
+  #kbActions{height:8.5vh !important;min-height:60px !important;padding:8px 14px 10px !important;}
+  .kb-act{font-size:clamp(24px,2.4vw,44px) !important;}
+}
+
+/* ══════════════════════════════════════════════════════
+   KLAVYE v23 — ALT AKSİYON BAR KALDIRILDI + DAHA BÜYÜK TUŞLAR
+   Speak / Voice / Blink alanı yer kaplamaz. Klavye satırları aşağı kadar büyür.
+   Kalibrasyon 25 nokta artık yeni tam ekran klavye bölgelerine göre ayarlandı.
+   ══════════════════════════════════════════════════════ */
+#kbPanel{
+  display:none;
+  grid-template-rows:auto auto auto 1fr !important;
+}
+
+#kbTextArea{
+  height:7.2vh !important;
+  min-height:54px !important;
+  max-height:76px !important;
+  padding:8px 24px !important;
+  font-size:clamp(30px,3vw,54px) !important;
+}
+
+#kbTopBar{
+  height:4.8vh !important;
+  min-height:38px !important;
+  max-height:50px !important;
+  padding:5px 12px !important;
+}
+
+#kbSugg{
+  height:6.3vh !important;
+  min-height:46px !important;
+  max-height:64px !important;
+  padding:7px 12px !important;
+}
+
+#kbSugg .kb-sg,
+#kbSugg button,
+.kb-sg{
+  min-width:210px !important;
+  max-height:none !important;
+  font-size:clamp(24px,2vw,36px) !important;
+}
+
+#kbRows{
+  height:auto !important;
+  flex:1 1 auto !important;
+  padding:14px 18px 18px !important;
+  gap:14px !important;
+}
+
+.kb-row{
+  flex:1 1 0 !important;
+  gap:14px !important;
+}
+
+.kb-key{
+  border-radius:28px !important;
+  font-size:clamp(44px,4.5vw,84px) !important;
+  border-width:2.5px !important;
+}
+
+.kb-key.wide{
+  flex:2.05 1 0 !important;
+  font-size:clamp(32px,3.15vw,58px) !important;
+}
+
+.kb-key.xwide{
+  flex:8.8 1 0 !important;
+}
+
+#kbActions{
+  display:none !important;
+  height:0 !important;
+  min-height:0 !important;
+  max-height:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  overflow:hidden !important;
+}
+
+/* Back artık alt orta yerine küçük ve tuşları kapatmayacak şekilde sol altta */
+#gazeBackBtn{
+  width:220px !important;
+  height:58px !important;
+  left:18px !important;
+  bottom:18px !important;
+  right:auto !important;
+  transform:none !important;
+  font-size:20px !important;
+  opacity:.82 !important;
+}
+
+/* Debug kamera da klavyeyi kapatmasın */
+#teacherCamBox{
+  width:145px !important;
+  height:112px !important;
+  right:12px !important;
+  bottom:12px !important;
+  opacity:.72 !important;
+}
+#teacherCamTitle{font-size:8px !important;padding:3px 5px !important;}
+#teacherCamInfo{font-size:8px !important;padding:4px 5px !important;}
+
+@media(max-height:760px){
+  #kbTextArea{height:6.5vh !important;min-height:46px !important;font-size:clamp(26px,2.7vw,44px) !important;}
+  #kbTopBar{height:4.3vh !important;min-height:34px !important;}
+  #kbSugg{height:5.6vh !important;min-height:40px !important;}
+  #kbRows{padding:10px 14px 14px !important;gap:11px !important;}
+  .kb-row{gap:11px !important;}
+  .kb-key{border-radius:22px !important;font-size:clamp(40px,4.05vw,72px) !important;}
+  .kb-key.wide{font-size:clamp(28px,2.75vw,50px) !important;}
+  #gazeBackBtn{width:190px !important;height:50px !important;font-size:18px !important;}
+  #teacherCamBox{width:128px !important;height:98px !important;}
+}
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   QUICK MESSAGE — KİŞİ KÜÇÜK, 6 MESAJ KARTI BÜYÜK 3x2
+   ══════════════════════════════════════════════════════ */
+#quickMsgPanel{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  z-index:540 !important;
+  display:none;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  padding:24px 54px 24px !important;
+  box-sizing:border-box !important;
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,.16), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(236,72,153,.13), transparent 34%),
+    #030712 !important;
+  color:#fff !important;
+  overflow:hidden !important;
+}
+
+.qm-top{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px !important;
+  margin:0 0 14px !important;
+  flex:0 0 auto !important;
+}
+
+#qmTitle{
+  margin:0 !important;
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:clamp(30px,3vw,52px) !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  letter-spacing:.01em !important;
+}
+
+.qm-close-big{
+  min-width:128px !important;
+  height:58px !important;
+  border-radius:18px !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  background:rgba(255,255,255,.045) !important;
+  color:#fff !important;
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:18px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+}
+
+/* KİŞİ KARTI KÜÇÜK */
+.qm-contact-card{
+  width:100% !important;
+  max-width:none !important;
+  height:88px !important;
+  min-height:88px !important;
+  max-height:88px !important;
+  display:grid !important;
+  grid-template-columns:auto 1fr auto !important;
+  align-items:center !important;
+  gap:18px !important;
+  padding:10px 26px !important;
+  box-sizing:border-box !important;
+  border-radius:22px !important;
+  background:rgba(255,255,255,.045) !important;
+  border:1px solid rgba(148,163,184,.22) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05) !important;
+  margin:0 0 14px !important;
+  flex:0 0 auto !important;
+}
+
+.qmc-avatar{
+  width:62px !important;
+  height:62px !important;
+  min-width:62px !important;
+  border-radius:50% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:28px !important;
+  background:radial-gradient(circle at 50% 35%, rgba(168,85,247,.55), rgba(15,23,42,.92)) !important;
+  border:2px solid rgba(37,99,235,.9) !important;
+  box-shadow:0 0 22px rgba(37,99,235,.22) !important;
+}
+
+.qmc-info{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  gap:2px !important;
+  min-width:0 !important;
+}
+
+.qmc-name{
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:clamp(20px,1.8vw,30px) !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  color:#fff !important;
+}
+
+.qmc-role{
+  font-family:'DM Sans',Arial,sans-serif !important;
+  font-size:14px !important;
+  line-height:1.1 !important;
+  font-weight:800 !important;
+  color:#b8b6ff !important;
+}
+
+.qmc-actions{
+  display:flex !important;
+  gap:14px !important;
+  align-items:center !important;
+}
+
+.qmc-action-btn{
+  width:72px !important;
+  height:56px !important;
+  border-radius:16px !important;
+  font-size:24px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  cursor:pointer !important;
+}
+
+.qmc-action-btn.call{
+  background:rgba(16,185,129,.14) !important;
+  border:1.5px solid rgba(16,185,129,.75) !important;
+}
+.qmc-action-btn.msg{
+  background:rgba(37,99,235,.16) !important;
+  border:1.5px solid rgba(37,99,235,.85) !important;
+}
+
+.qm-section-title{
+  margin:0 0 10px !important;
+  flex:0 0 auto !important;
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  letter-spacing:.08em !important;
+  color:#b8b6ff !important;
+  text-transform:uppercase !important;
+}
+
+/* 6 MESAJ KARTI BÜYÜK — TAM GENİŞLİK */
+.qm-msgs,
+#qmMsgsList{
+  flex:1 1 auto !important;
+  align-self:stretch !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(2, minmax(0, 1fr)) !important;
+  gap:18px 24px !important;
+  overflow:visible !important;
+}
+
+.qm-msg{
+  position:relative !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  margin:0 !important;
+  padding:22px 20px !important;
+  border-radius:28px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  text-align:center !important;
+  overflow:hidden !important;
+  cursor:pointer !important;
+  background:rgba(255,255,255,.04) !important;
+  border:2px solid rgba(255,255,255,.14) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+.qm-msg:nth-child(1){border-color:#ec4899 !important;background:linear-gradient(135deg,rgba(236,72,153,.18),rgba(255,255,255,.035)) !important;}
+.qm-msg:nth-child(2){border-color:#10b981 !important;background:linear-gradient(135deg,rgba(16,185,129,.16),rgba(255,255,255,.035)) !important;}
+.qm-msg:nth-child(3){border-color:#2563eb !important;background:linear-gradient(135deg,rgba(37,99,235,.18),rgba(255,255,255,.035)) !important;}
+.qm-msg:nth-child(4){border-color:#a855f7 !important;background:linear-gradient(135deg,rgba(168,85,247,.16),rgba(255,255,255,.035)) !important;}
+.qm-msg:nth-child(5){border-color:#0ea5e9 !important;background:linear-gradient(135deg,rgba(14,165,233,.16),rgba(255,255,255,.035)) !important;}
+.qm-msg:nth-child(6){border-color:#f59e0b !important;background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(255,255,255,.035)) !important;}
+
+.qm-msg.gazing{
+  transform:scale(1.018) !important;
+  box-shadow:0 0 34px rgba(56,189,248,.42), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.qmm-icon{
+  display:block !important;
+  font-size:clamp(46px,4.2vw,76px) !important;
+  line-height:1 !important;
+  flex:0 0 auto !important;
+}
+
+.qmm-text{
+  display:block !important;
+  width:100% !important;
+  max-width:94% !important;
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:clamp(24px,2.05vw,38px) !important;
+  line-height:1.16 !important;
+  font-weight:900 !important;
+  color:#fff !important;
+  text-shadow:0 2px 16px rgba(0,0,0,.55) !important;
+  overflow:visible !important;
+}
+
+.qmm-del{display:none !important;}
+
+.qm-dwell{
+  position:absolute !important;
+  left:0 !important;
+  bottom:0 !important;
+  height:9px !important;
+  width:0%;
+  border-radius:999px !important;
+  background:linear-gradient(90deg,#facc15,#fb7185) !important;
+}
+
+.qm-back-big{
+  align-self:center !important;
+  flex:0 0 auto !important;
+  margin-top:14px !important;
+  width:min(360px, 30vw) !important;
+  min-width:250px !important;
+  height:64px !important;
+  border-radius:24px !important;
+  border:2px solid rgba(250,204,21,.75) !important;
+  background:rgba(250,204,21,.06) !important;
+  color:#facc15 !important;
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:24px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+}
+
+#qmAddRow,
+#qmEditLabel,
+#quickMsgPanel > .btn-s{
+  display:none !important;
+}
+
+/* Debug kamera kartları çok kapatmasın */
+#teacherCamBox{
+  width:170px !important;
+  height:132px !important;
+  right:14px !important;
+  bottom:14px !important;
+  opacity:.88 !important;
+}
+
+@media(max-height:760px){
+  #quickMsgPanel{padding:18px 42px 18px !important;}
+  #qmTitle{font-size:clamp(28px,2.6vw,44px) !important;}
+  .qm-close-big{height:50px !important;min-width:116px !important;font-size:16px !important;}
+  .qm-contact-card{height:74px !important;min-height:74px !important;max-height:74px !important;padding:8px 20px !important;margin-bottom:10px !important;}
+  .qmc-avatar{width:52px !important;height:52px !important;min-width:52px !important;font-size:24px !important;}
+  .qmc-name{font-size:clamp(18px,1.6vw,26px) !important;}
+  .qmc-role{font-size:13px !important;}
+  .qmc-action-btn{width:64px !important;height:48px !important;font-size:22px !important;}
+  .qm-section-title{font-size:16px !important;margin-bottom:8px !important;}
+  #qmMsgsList,.qm-msgs{gap:14px 20px !important;}
+  .qm-msg{border-radius:22px !important;padding:14px 14px !important;gap:8px !important;}
+  .qmm-icon{font-size:clamp(34px,3.2vw,58px) !important;}
+  .qmm-text{font-size:clamp(20px,1.75vw,30px) !important;line-height:1.12 !important;}
+  .qm-back-big{height:54px !important;font-size:22px !important;margin-top:10px !important;}
+}
+
+@media(max-width:900px){
+  #quickMsgPanel{padding:16px 14px 20px !important;overflow-y:auto !important;}
+  .qm-contact-card{height:auto !important;min-height:74px !important;max-height:none !important;grid-template-columns:auto 1fr auto !important;gap:12px !important;padding:10px 12px !important;}
+  .qmc-avatar{width:52px !important;height:52px !important;min-width:52px !important;font-size:24px !important;}
+  .qmc-action-btn{width:54px !important;height:46px !important;font-size:20px !important;}
+  .qm-msgs,#qmMsgsList{grid-template-columns:1fr !important;grid-template-rows:none !important;}
+  .qm-msg{min-height:170px !important;}
+}
+
+
+
+/* v26 keyboard: görsel tuş büyük kalır, seçim hissi merkezde toplanır */
+.kb-key.gazing::after{
+  content:"";
+  position:absolute;
+  inset:14%;
+  border-radius:20px;
+  border:2px solid rgba(250,204,21,.62);
+  pointer-events:none;
+  z-index:2;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   KLAVYE v27 — 2 AŞAMALI BÜYÜK BLOK KLAVYE
+   Amaç: harfleri dip dibe kullanmak yerine önce harf grubu, sonra büyük harf seçimi.
+   Kalibrasyon ve genel gaze modeli değişmez.
+   ══════════════════════════════════════════════════════ */
+#kbRows.two-step-kb{
+  padding:18px 28px 24px !important;
+  gap:18px !important;
+}
+#kbRows.two-step-kb .kb-row{
+  gap:18px !important;
+}
+.kb-key.kb-group{
+  flex:1 1 0 !important;
+  font-size:clamp(34px,3.3vw,64px) !important;
+  letter-spacing:.02em !important;
+  background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(255,255,255,.06)) !important;
+  border-color:rgba(56,189,248,.36) !important;
+}
+.kb-key.kb-letter-large{
+  font-size:clamp(58px,6vw,112px) !important;
+  border-radius:34px !important;
+}
+.kb-key.kb-back-group{
+  background:rgba(250,204,21,.10) !important;
+  border-color:rgba(250,204,21,.55) !important;
+  color:#fde68a !important;
+}
+.kb-key.kb-action-small{
+  font-size:clamp(26px,2.5vw,48px) !important;
+}
+#kbTopTitle.kb-stage-title{
+  color:#e0f2fe !important;
+  opacity:1 !important;
+}
+@media(max-height:760px){
+  #kbRows.two-step-kb{padding:12px 20px 16px !important;gap:14px !important;}
+  #kbRows.two-step-kb .kb-row{gap:14px !important;}
+  .kb-key.kb-letter-large{font-size:clamp(48px,5.2vw,92px) !important;border-radius:26px !important;}
+}
+
+
+/* ══════════════════════════════════════════════════════
+   MAIN MENU v28 — ETRAFIMDA NE VAR KALDIRILDI
+   Kalibrasyona ve gaze hesaplamasına dokunulmadı.
+   Menü artık 5 kart: üstte 3, altta 2 büyük kart.
+   ══════════════════════════════════════════════════════ */
+#mainMenuGrid{
+  grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+  grid-template-rows:repeat(2, minmax(0, 1fr)) !important;
+  gap:18px !important;
+}
+#mainMenuGrid .btn-sm{
+  grid-column:span 2 !important;
+}
+#mainMenuGrid #a11yBtn,
+#mainMenuGrid #recalibBtn{
+  grid-column:span 3 !important;
+}
+#visionBtn{
+  display:none !important;
+}
+@media(max-width:760px){
+  #mainMenuGrid{
+    grid-template-columns:1fr !important;
+    grid-template-rows:none !important;
+  }
+  #mainMenuGrid .btn-sm,
+  #mainMenuGrid #a11yBtn,
+  #mainMenuGrid #recalibBtn{
+    grid-column:auto !important;
+  }
+}
+
+
+
+/* ══════════════════════════════════════════════════════
+   v29 — 3 KARTLI AŞAMALI PHRASE BOARD + QUICK MESSAGE
+   Kalibrasyon / gaze hesaplama / kamera debug kısmına dokunmaz.
+   Her aşamada sadece SOL · ORTA · SAĞ olmak üzere 3 büyük hedef gösterir.
+   ══════════════════════════════════════════════════════ */
+#phraseBoard{
+  padding:28px 30px 88px !important;
+}
+#phraseBoard .pb-hdr{
+  height:74px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 0 18px !important;
+}
+#pbTitle{
+  font-family:'Syne',Arial,sans-serif !important;
+  font-size:clamp(24px,2.2vw,38px) !important;
+  font-weight:900 !important;
+  color:#e5e7eb !important;
+}
+#pbGrid.pb-three-stage,
+.pb-grid.pb-three-stage{
+  width:100% !important;
+  height:calc(100vh - 210px) !important;
+  min-height:420px !important;
+  max-height:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:1fr !important;
+  gap:28px !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+#pbGrid.pb-three-stage .phrase-btn{
+  height:100% !important;
+  min-height:0 !important;
+  border-radius:34px !important;
+  padding:34px 26px !important;
+  gap:24px !important;
+  border:2px solid rgba(255,255,255,.16) !important;
+  background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(255,255,255,.035)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 18px 45px rgba(0,0,0,.22) !important;
+}
+#pbGrid.pb-three-stage .phrase-btn:nth-child(1){border-color:rgba(56,189,248,.62) !important;}
+#pbGrid.pb-three-stage .phrase-btn:nth-child(2){border-color:rgba(168,85,247,.62) !important;}
+#pbGrid.pb-three-stage .phrase-btn:nth-child(3){border-color:rgba(16,185,129,.62) !important;}
+#pbGrid.pb-three-stage .pb-i{
+  font-size:clamp(78px,8vw,150px) !important;
+}
+#pbGrid.pb-three-stage .pb-t{
+  font-size:clamp(32px,3.1vw,58px) !important;
+  line-height:1.12 !important;
+  max-width:95% !important;
+}
+#pbGrid.pb-three-stage .pb-sub{
+  display:block !important;
+  margin-top:8px !important;
+  font-family:'DM Sans',Arial,sans-serif !important;
+  font-size:clamp(16px,1.25vw,22px) !important;
+  color:#cbd5e1 !important;
+  opacity:.78 !important;
+  font-weight:800 !important;
+}
+#quickMsgPanel.v29-three-card{
+  padding:24px 54px 30px !important;
+}
+#quickMsgPanel.v29-three-card .qm-section-title{
+  font-size:clamp(22px,1.7vw,32px) !important;
+  margin:6px 0 14px !important;
+}
+#qmMsgsList.qm-three-stage,
+.qm-msgs.qm-three-stage{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:1fr !important;
+  gap:28px !important;
+  min-height:0 !important;
+  height:auto !important;
+  flex:1 1 auto !important;
+}
+#qmMsgsList.qm-three-stage .qm-msg{
+  min-height:0 !important;
+  height:100% !important;
+  border-radius:34px !important;
+  padding:34px 26px !important;
+  gap:22px !important;
+}
+#qmMsgsList.qm-three-stage .qmm-icon{
+  font-size:clamp(76px,7vw,132px) !important;
+}
+#qmMsgsList.qm-three-stage .qmm-text{
+  font-size:clamp(30px,2.8vw,52px) !important;
+  line-height:1.14 !important;
+}
+#qmMsgsList.qm-three-stage .qmm-sub{
+  display:block !important;
+  font-family:'DM Sans',Arial,sans-serif !important;
+  font-size:clamp(15px,1.1vw,21px) !important;
+  color:#dbeafe !important;
+  opacity:.76 !important;
+  font-weight:800 !important;
+  margin-top:6px !important;
+}
+#quickMsgPanel.v29-three-card .qm-back-big{
+  display:none !important;
+}
+#quickMsgPanel.v29-three-card #teacherCamBox,
+#phraseBoard #teacherCamBox{
+  width:126px !important;
+  height:98px !important;
+}
+@media(max-height:760px){
+  #phraseBoard{padding:18px 24px 72px !important;}
+  #phraseBoard .pb-hdr{height:54px !important;margin-bottom:12px !important;}
+  #pbGrid.pb-three-stage{height:calc(100vh - 155px) !important;min-height:330px !important;gap:20px !important;}
+  #pbGrid.pb-three-stage .phrase-btn{border-radius:28px !important;padding:24px 18px !important;gap:14px !important;}
+  #pbGrid.pb-three-stage .pb-i{font-size:clamp(58px,6vw,112px) !important;}
+  #pbGrid.pb-three-stage .pb-t{font-size:clamp(26px,2.5vw,44px) !important;}
+  #quickMsgPanel.v29-three-card{padding:18px 42px 22px !important;}
+  #qmMsgsList.qm-three-stage{gap:22px !important;}
+  #qmMsgsList.qm-three-stage .qm-msg{border-radius:28px !important;padding:22px 18px !important;gap:12px !important;}
+  #qmMsgsList.qm-three-stage .qmm-icon{font-size:clamp(56px,5.6vw,96px) !important;}
+  #qmMsgsList.qm-three-stage .qmm-text{font-size:clamp(24px,2.35vw,40px) !important;}
+}
+@media(max-width:900px){
+  #pbGrid.pb-three-stage,
+  #qmMsgsList.qm-three-stage{grid-template-columns:1fr !important;grid-template-rows:repeat(3, minmax(160px,1fr)) !important;}
+}
+
+
+/* ══════════════════════════════════════════════════════
+   v30 — DİL SEÇİMİ KALİBRASYONDAN SONRA
+   Başlangıç ve ana menüdeki küçük TR/ENG kapsülleri gizlendi.
+   Dil seçimi ayrı ekranda 2 büyük hedef olarak yapılır: göz dwell + mouse/touch.
+   ══════════════════════════════════════════════════════ */
+#startScreen .lang-switcher{
+  display:none !important;
+}
+#mainLangBar .lang-btn{
+  display:none !important;
+}
+#languageScreen{
+  position:fixed;
+  inset:0;
+  z-index:510;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(37,99,235,.22), transparent 34%),
+    radial-gradient(circle at 80% 70%, rgba(168,85,247,.18), transparent 36%),
+    #030712;
+  color:#fff;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:42px;
+  box-sizing:border-box;
+}
+#languageScreen.hidden{display:none!important;}
+#languageScreen:not(.hidden){display:flex!important;}
+.lang-choice-title{
+  font-family:'Syne',Arial,sans-serif;
+  font-size:clamp(34px,4vw,72px);
+  font-weight:900;
+  margin:0 0 12px;
+  text-align:center;
+}
+.lang-choice-sub{
+  font-family:'DM Sans',Arial,sans-serif;
+  font-size:clamp(18px,1.6vw,28px);
+  color:#cbd5e1;
+  font-weight:800;
+  margin:0 0 38px;
+  text-align:center;
+}
+.lang-choice-grid{
+  width:min(1180px,94vw);
+  height:min(430px,46vh);
+  min-height:310px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:34px;
+}
+.lang-choice-card{
+  position:relative;
+  border-radius:38px;
+  border:3px solid rgba(255,255,255,.16);
+  background:linear-gradient(135deg,rgba(37,99,235,.18),rgba(255,255,255,.04));
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  overflow:hidden;
+  font-family:'Syne',Arial,sans-serif;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 24px 50px rgba(0,0,0,.28);
+}
+.lang-choice-card:nth-child(1){border-color:rgba(59,130,246,.78);}
+.lang-choice-card:nth-child(2){border-color:rgba(16,185,129,.78);}
+.lang-choice-card.gazing,
+.lang-choice-card:hover{
+  transform:scale(1.018);
+  box-shadow:0 0 44px rgba(56,189,248,.38), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.lang-choice-code{
+  font-size:clamp(58px,7vw,128px);
+  line-height:1;
+  font-weight:900;
+}
+.lang-choice-name{
+  font-size:clamp(24px,2.4vw,44px);
+  font-weight:900;
+}
+.lang-choice-hint{
+  font-family:'DM Sans',Arial,sans-serif;
+  font-size:clamp(14px,1.1vw,20px);
+  color:#dbeafe;
+  font-weight:800;
+  opacity:.78;
+}
+.lang-choice-dwell{
+  position:absolute;
+  left:0;
+  bottom:0;
+  height:12px;
+  width:0%;
+  background:linear-gradient(90deg,#facc15,#fb7185);
+  border-radius:999px;
+}
+@media(max-width:850px){
+  .lang-choice-grid{grid-template-columns:1fr;height:auto;}
+  .lang-choice-card{min-height:220px;}
+}
+
+
+
+/* ══════════════════════════════════════════════════════
+   v33 — ANA MENÜ 3 KARTLI AŞAMALI SİSTEM
+   Ana Menü: Cümle Kartları · Klavye · Diğer
+   Diğer: Hızlı Mesaj · Erişilebilirlik · Kalibrasyon
+   Kalibrasyon, gaze, dil ekranı ve kamera debug korunur.
+   ══════════════════════════════════════════════════════ */
+#mainMenuGrid.main-three-stage,
+#mainMenuGrid{
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:1fr !important;
+  gap:28px !important;
+  height:clamp(320px, 46vh, 430px) !important;
+  align-items:stretch !important;
+}
+#mainMenuGrid.main-three-stage .btn-sm,
+#mainMenuGrid .btn-sm{
+  grid-column:auto !important;
+  height:100% !important;
+  min-height:0 !important;
+  border-radius:34px !important;
+  padding:34px 24px !important;
+  gap:22px !important;
+}
+#mainMenuGrid.main-three-stage .bsm-icon,
+#mainMenuGrid .bsm-icon{
+  font-size:clamp(64px, 6.3vw, 118px) !important;
+}
+#mainMenuGrid.main-three-stage .bsm-label,
+#mainMenuGrid .bsm-label{
+  font-size:clamp(30px, 3vw, 56px) !important;
+  line-height:1.08 !important;
+}
+#mainMenuGrid.main-three-stage .btn-dwell,
+#mainMenuGrid .btn-dwell{
+  height:12px !important;
+}
+#mainSectionLabel::after{
+  content:attr(data-stage-label);
+  margin-left:10px;
+  color:#facc15;
+  font-weight:900;
+}
+@media(max-height:760px){
+  #mainMenuGrid.main-three-stage,
+  #mainMenuGrid{height:clamp(280px, 43vh, 360px) !important;gap:22px !important;}
+  #mainMenuGrid.main-three-stage .btn-sm,
+  #mainMenuGrid .btn-sm{border-radius:28px !important;padding:26px 18px !important;gap:14px !important;}
+  #mainMenuGrid.main-three-stage .bsm-icon,
+  #mainMenuGrid .bsm-icon{font-size:clamp(52px,5.3vw,92px) !important;}
+  #mainMenuGrid.main-three-stage .bsm-label,
+  #mainMenuGrid .bsm-label{font-size:clamp(26px,2.5vw,44px) !important;}
+}
+@media(max-width:900px){
+  #mainMenuGrid.main-three-stage,
+  #mainMenuGrid{grid-template-columns:1fr !important;grid-template-rows:repeat(3, minmax(150px,1fr)) !important;height:auto !important;}
+}
+
+
+
+/* ══════════════════════════════════════════════════════
+   v34 — MORE MENÜ 3'LÜ YAN YANA FIX
+   Eski v28 CSS'teki #a11yBtn / #recalibBtn grid-column:span 3 kuralını ezer.
+   Böylece More ekranı: [Hızlı Mesaj] [Erişilebilirlik] [Kalibrasyon]
+   şeklinde aynı satırda kalır.
+   ══════════════════════════════════════════════════════ */
+#mainMenuGrid.main-three-stage{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows:1fr !important;
+  height:clamp(320px, 46vh, 430px) !important;
+  gap:28px !important;
+  overflow:visible !important;
+}
+#mainMenuGrid.main-three-stage .btn-sm,
+#mainMenuGrid.main-three-stage #phraseBtn,
+#mainMenuGrid.main-three-stage #keyboardBtn,
+#mainMenuGrid.main-three-stage #quickMsgBtn,
+#mainMenuGrid.main-three-stage #a11yBtn,
+#mainMenuGrid.main-three-stage #recalibBtn,
+#mainMenuGrid.main-three-stage #mainMoreBtn{
+  grid-column:auto !important;
+  grid-row:auto !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
+@media(max-width:900px){
+  #mainMenuGrid.main-three-stage{
+    grid-template-columns:1fr !important;
+    grid-template-rows:repeat(3, minmax(150px,1fr)) !important;
+    height:auto !important;
+  }
 }

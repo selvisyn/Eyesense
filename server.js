@@ -180,6 +180,47 @@ app.post('/api/notify-caregiver', async (req, res) => {
   }
 });
 
+
+// ── GEMINI PROXY — keyler sadece burada, client'a hiç çıkmaz ──
+
+const GEMINI_KEY_VISION = process.env.GEMINI_KEY_VISION || '';
+const GEMINI_KEY_OCR    = process.env.GEMINI_KEY_OCR    || '';
+
+async function callGemini(key, model, payload) {
+  const fetch = (await import('node-fetch')).default;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data?.error?.message || 'Gemini hata');
+  return data;
+}
+
+app.post('/api/vision', async (req, res) => {
+  if (!GEMINI_KEY_VISION) return res.status(500).json({ error: 'GEMINI_KEY_VISION tanimlanmamis' });
+  try {
+    const data = await callGemini(GEMINI_KEY_VISION, req.body.model || 'gemini-2.0-flash', req.body.payload);
+    res.json(data);
+  } catch (err) {
+    console.error('Vision proxy hata:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/ocr', async (req, res) => {
+  if (!GEMINI_KEY_OCR) return res.status(500).json({ error: 'GEMINI_KEY_OCR tanimlanmamis' });
+  try {
+    const data = await callGemini(GEMINI_KEY_OCR, req.body.model || 'gemini-2.0-flash', req.body.payload);
+    res.json(data);
+  } catch (err) {
+    console.error('OCR proxy hata:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log('EyeSense Backend dinliyor, port:', PORT, '| Firebase:', firebaseReady ? 'hazir' : 'log-only');
 });
