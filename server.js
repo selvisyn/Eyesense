@@ -111,9 +111,14 @@ app.post('/api/notify-caregiver', async (req, res) => {
 
   if (db && contactId !== undefined) {
     try {
+      // Normal contactId (APK)
       const snap = await db.collection('fcm_tokens').where('contactId', '==', String(contactId)).get();
       snap.forEach(doc => tokens.add(doc.data().token));
       console.log('Firestore token sayisi contactId', contactId, ':', snap.size);
+      // Web contactId (_web suffix)
+      const snapWeb = await db.collection('fcm_tokens').where('contactId', '==', String(contactId) + '_web').get();
+      snapWeb.forEach(doc => tokens.add(doc.data().token));
+      console.log('Firestore token sayisi contactId', contactId + '_web', ':', snapWeb.size);
     } catch (err) {
       console.error('Firestore okuma hatasi:', err.message);
     }
